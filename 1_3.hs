@@ -53,6 +53,14 @@ Per definition, phi(m) counts the number of relative primes less than m. If all 
 
 (a) (m+1) / 2
 
+(b) m = qb+1 for q = (m-1)/b
+(-1)*m = = -qb - 1
+so -qb = (-(m-1)/b)*b === 1 mod m
+Let's add m to get out of the negative range
+m + (-(m-1)/b)*b === 1 mod m
+
+so the inverse is -(m-1)/b + mb
+
 -}
 
 -- 1.23
