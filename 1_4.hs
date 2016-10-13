@@ -118,7 +118,7 @@ First, we note that q is prime, so p-1 must only have two divisors: p-1 = 2q.
 
 Second, order of g must divide p-1 since it's a unit mod p.
 We know that g^q ==/= 1 => order of g doesn't divide q. Similarly it can't be 1:
-g ==/= 0 mod p. It also can't be 2 since we know from modular arithmetics that
+g ==/= 1 mod p. It also can't be 2 since we know from modular arithmetics that
   a1 === b1 and a2 === b2 mod p => a1a2 === b1b2 mod p. Rewrite
   g^2 === 1 mod p as g * g === +/- 1 * +/- 1 mod p
 So g must be congruent to either 1 or -1 mod p, which is not the case.
