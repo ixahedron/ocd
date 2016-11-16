@@ -57,6 +57,38 @@ an inverse for A^k and get m by computing
 
 -}
 
+-- 2.10
+
+{-
+
+(a) First of all, notice m = m^(abcd), with c = 15619, d = 31883. So it must be that
+  
+  abcd === 1 mod p-1,
+
+Considering that both parties choose their exponents without consulting each other,
+that suggests that
+
+  m^ac = m^bd = m mod p,
+
+so that they can decrypt their own doing.
+
+From this it follows that
+
+  ac = bd = 1 mod p-1
+
+Indeed,
+*Main> mod (15619*3589) 32610
+1
+*Main> mod (4037*31883) 32610
+1
+
+
+(b) already done half-heartedly in (a) ¯\_(ツ)_/¯
+
+(c), (d) fuck-all :(
+
+-}
+
 -- 2.11
 
 {-
@@ -113,13 +145,23 @@ Subgroup itself is a group. QED
 (b) φ(g1 * g2) = (g1 * g2)^2 = g1^2 * g2^2 = φ(g1) * φ(g2)
 Use S3 from 2.11 as a counterexample.
 
-(c)
+(c) φ(g1 * g2) = (g1 * g2)^-1 = g1^-1 * g2^-1 = φ(g1) * φ(g2)
+?
 
 -}
 
+-- 2.14 skipped
+
+
+-- 2.15
+
+
+-- 2.16 skipped
+
+
 -- 2.17
 
-{- Shit's not working yet
+{- Shit's now working somewhat. Order calculation too complicated for me :( -}
 
 flrt :: Integer -> Integer  -- flrt x ≈ √x,  with  flrt x^2 ≤ x < flrt(x+1)^2
 flrt x = approx (round . (sqrt::Double->Double) . fromInteger $ x)
@@ -129,14 +171,17 @@ flrt x = approx (round . (sqrt::Double->Double) . fromInteger $ x)
           where ctrl = r^2
                 diff = (ctrl - x) // (2*r)    -- ∂/∂x x² = 2x
 
-         a//b = a`div`b + if (a>0)==(b>0) then 1 else 0   -- always away from 0
+         a // b = a `div` b + if (a > 0) == (b > 0) then 1 else 0   -- always away from 0
 
 sbg :: Integer -> Integer -> Integer -> Integer -> Integer
 sbg p order g h = i + j*n
   where n = 1 + flrt order
-        lg = sort [(g^k, k) | k<-[0..n]]
-        lh = sort [(h * inv p g^(n*k), k) | k<-[0..n]]
-        (i,j) = match lg lh
+        lg = sort [(g^k `mod` p, k) | k<-[0..n]]
+        lh = sort [(h * inv p g^(n*k) `mod` p, k) | k<-[0..n]]
+        (i,j) = fm (0,0) $ match lg lh
+
+        fm _ (Just x) = x
+        fm d       _  = d
 
 match :: [(Integer, Integer)] -> [(Integer, Integer)] -> Maybe (Integer, Integer)
 match [] _ = Nothing
@@ -145,4 +190,15 @@ match xx@((x,i):xs) yy@((y,j):ys) | x == y = Just (i,j)
                                   | x > y = match xx ys
                                   | otherwise = match xs yy
 
--}                                  
+{-
+
+*Main> sbg 71 70 11 21
+37
+
+*Main> sbg 593 148 156 116
+59
+
+*Main> sbg 3571 510 650 2213
+319
+
+-}
