@@ -187,3 +187,18 @@ Meow! <3
 
 -}
 
+-- 2.25
+
+{-
+
+(a) We use the Chinese remainder theorem to compute roots by combining the roots modulo factors.
+It is obvious that if (x,y) is a solution after combining it with CRT, then so are (-x,y), (x,-y), (-x,-y),
+because squaring gets rid of minuses. Hence, 4 solutions.
+
+(b) If we have an oracle producing all four square roots, we can take advantage of the fact that
+by the CRT, all of them are produced by combining midstep solutions +/- modulo p and +/- modulo q.
+Take any two solutions a,b so that a === b mod p and a ==/= b mod q. Then a-b === 0 mod p,
+which means it is divisible by p and we just need to compute gcd(n,a-b). Even if we don't know which
+combination will work, it's not computationally hard to compute gcd for 4 + 3 + 2 + 1 = 10 solution pairs.
+-}
+
