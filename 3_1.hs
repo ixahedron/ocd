@@ -44,7 +44,38 @@ euc a b = (g*x,g*y)
           where c = a `div` b
                 d = a `mod` b
 
--- 3.2 skipped for now
+-- 3.2
+
+{-
+
+(a) Let's say we have a solution, x. Let's note that gcd(c, p)=1 and so gcd(x,p)=1.
+It's clear that if there exist any other solutions, they have the form of
+kx for some k's in Z, since it must hold:
+                             !
+  (kx)^e ≡ k^e*x^e ≡ k^e * c ≡ c (mod p)
+
+So we need to find such values of k that k^e ≡ 1 (mod p). It's immediately clear that
+the number of such distinct k's is precisely the number of solutions to the congruence.
+Now let's apply the primitive root theorem. p is a prime, conveniently, so it has a
+primitive root, let's call it g. g, by definition, generates a group of residues mod n.
+That means we can set k = g^i for some i in [0,p-1].
+The problem of finding the k's is then as follows:
+
+  (g^i)^e ≡ 1 (mod p) <=> g^(ie) ≡ 1 (mod p) <=> ie ≡ 0 (mod p-1)
+
+Now if gcd(e,p-1) = p-1 (e is a multiple of p-1), it's clear
+that i can be anything and so we indeed have gcd(e,p-1) = p-1 solutions.
+How to generalise?
+Otherwise, consider that
+  p-1 | ie => p-1 / gcd (e,p-1) | i
+
+Fuck, does that even help us? Uuhhh
+                                                      j in [0,gcd(e,p-1)]
+0 ≡ ie ≡ ie + (e*(p-1)/gcd(e,p-1)) ≡ e(i + (p-1)/gcd(e,p-1)) ≡ e(i + j*(p-i)/gcd(e,p-1))
+
+So maybe i (which we had from the beginning) + j * (p-1)/gcd(e,p-1) are all the solutions
+to the congruence, I don't even know at this point. Then there would clearly be gcd(e,p-1)
+-}
 
 -- 3.3
 
@@ -57,6 +88,7 @@ So let's take a look at all these cases.
 
 i. gcd c p > 1 <=> p = ck for some k in Z.
 
+  ...
 
 -}
 
