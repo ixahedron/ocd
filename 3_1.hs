@@ -6,7 +6,8 @@ import Data.Ratio
 
 -- x^e ≡ c mod N
 solve_congruence :: (Integer,Integer) -> Integer -> Integer -> Integer
-solve_congruence (p,1) c e = let d = inv e (p-1) in c^d `mod` p
+solve_congruence (1,p) c e = let d = inv e (p-1) in (c^d) `mod` p
+solve_congruence (p,1) c e = solve_congruence (1,p) c e
 solve_congruence (p,q) c e = c^d `mod` (p*q)
   where d = inv e $ (p-1)*(q-1) `div` g
         g = gcd (p-1) (q-1)
@@ -18,10 +19,10 @@ solve_congruence (p,q) c e = c^d `mod` (p*q)
 36
 *Main> solve_congruence (541,1) 428 137
 213
-*Main> solve_congruence (1159,1) 614 73 
-598
-*Main> solve_congruence (8023,1) 677 751
-4858
+*Main> solve_congruence (19,61) 614 73 
+158
+*Main> solve_congruence (71,113) 677 751
+1355
 *Main> solve_congruence (607,661) 328047 38993
 36219
 
@@ -73,8 +74,9 @@ Fuck, does that even help us? Uuhhh
                                                       j in [0,gcd(e,p-1)]
 0 ≡ ie ≡ ie + (e*(p-1)/gcd(e,p-1)) ≡ e(i + (p-1)/gcd(e,p-1)) ≡ e(i + j*(p-i)/gcd(e,p-1))
 
-So maybe i (which we had from the beginning) + j * (p-1)/gcd(e,p-1) are all the solutions
-to the congruence, I don't even know at this point. Then there would clearly be gcd(e,p-1)
+So maybe powers of g in the form of i (which we had from the beginning) + j * (p-1)/gcd(e,p-1)
+(combined with x) are all the solutions to the congruence, I don't even know at this point.
+Then there would clearly be gcd(e,p-1) of them
 -}
 
 -- 3.3
