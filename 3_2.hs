@@ -112,14 +112,117 @@ solveQuadrEq a b c = (r1,r2)
 {-
 
 (a)
-x := (p-1)(q-1)
-e_1 * d_1 === 1 (mod x) <=> kx = e_1 * d_1 - 1
-e_2 * d_2 === 1 (mod x) <=> lx = e_2 * e_2 - 1
-
-It's obvious that x = gcd(kx,lx)/gcd(k,l)
-
-To factor N, finding out (p-1)(q-1) =: x suffices, as we already know from 3.9.
+This seems to have something to do with (multiplicative orders)?
 
 
+  a^(de) === a (mod N = pq) <=> a^(de-1) === 1 mod N    (i)
+
+We note that the above shows
+
+  de-1 === 0 (mod (p-1)(q-1))
+
+Now, both e and d must be relatively prime to (p-1)(q-1),
+so they're odd. That means:
+	
+  l := (d*e-1) = r*2^s, r odd, s>0.                     (ii)
+
+The rest is actually pretty much an application
+of Ex. 2.25, which I have, luckily, done ages ago.
+First of all, note that Ex. 2.25(a) tells us that
+if there are any solutions of x^2 === a (mod N = pq),
+then there are four of them.
+
+So a = 1 has four square roots. Now we see two of them right away,
+because they are trivial: 1 and -1. So we are only interested in
+x and -x with x === 1 (mod N), x === 1 (mod p) and x === -1 (mod q).
+Furthermore, if x is a non-trivial solution mod p, we find p by
+taking gcd(x-1,N). From there, the factorisation is easily obtained.
+
+Looking at (i) and (ii), we see that for every g in [1..n-1],
+
+  g^l === 1 (mod N),
+
+and so g^(l/2) is a square root of unity modulo N.
+If g^(l/2) is a trivial solution (+/-1), we ~need to go deeper~.
+So if l/2 is even, find a further square root of that by dividing
+this by another two and trying again. If l/2 is odd, this choice
+of g was useless and we choose another one.
+
+It's useful to note that g needs to be relatively prime to N.
+Then we can try to use a few small primes (so that it's unlikely that
+gcd(a,N)>1) as g. If we don't find a solution, we try the next g.
+
+That seems to work, but I don't know if that's rigorous enough.
+Also I'm not sure that's how it should be done in this case,
+as I only use one pair (e,d)?
+
+-}
+
+ned310b = ([(10988423,16784693), (25910155,11514115)], 38749709)
+ned310c = ([(70583995,4911157), (173111957,7346999), (180311381,29597249)], 225022969)
+ned310d = ([(1103927639,76923209), (1022313977,106791263), (387632407,7764043)], 1291233941)
+
+{-
+
+(b) *Main> factorByMagicBox (fst ned310b) (snd ned310b)
+Just (7247,5347)
+
+(c) *Main> factorByMagicBox (fst ned310c) (snd ned310c)
+Just (10867,20707)
+
+(d) *Main> factorByMagicBox (fst ned310d) (snd ned310d)
+Just (97151,13291)
+
+-}
+
+factorByMagicBox :: [(Integer,Integer)] -> Integer -> Maybe (Integer,Integer)
+factorByMagicBox        [] _ = Nothing
+factorByMagicBox ((e,d):_) n = iterateFactorisation (e*d-1) (takeWhile (<n) primes)
+  where iterateFactorisation _ [] = Nothing
+        iterateFactorisation t (g:gs)
+          | even t    = let tt = t `div` 2;
+                            x = mexp n g tt;
+                            p = gcd n $ x-1
+                        in if x > 1 && p > 1
+                           then Just (p, n `div` p)
+                           else iterateFactorisation tt (g:gs)
+          | otherwise = iterateFactorisation (e*d-1) gs
+
+-- modular (fast) exponentiation using binary method
+-- mexp m a e = a^e (mod m)
+mexp :: Integer -> Integer -> Integer -> Integer
+mexp 1 _ _ = 0
+mexp m a e = raise a e
+  where raise 0 _ = 0
+        raise _ 0 = 1
+        raise a 1 = a `mod` m
+        raise a e = let t = if e `mod` 2 == 1 then a `mod` m else 1
+                    in t * (raise (a^2 `mod` m) (e `div` 2)) `mod` m
+
+
+-- 3.11
+
+{-
+                                        === 1 mod p         F.l.t.
+(a) x === c_1 === m * g_1^(s_1) === m * (g^(p-1))^(r_1 * s_1) === m (mod p)
+The same reasoning goes for x === c_2 (mod q), and so it must be that
+x === m (mod N = pq).
+
+(b)
+
+  g_1 === 1 (mod p)
+  g_2 === 1 (mod q)
+
+This means we can use it:
+
+     x :=       y :=
+  (g_1 - 1) * (g_2 - 1) === 0 (mod p*q = N)
+
+so x*y is a multiple of N! Since N has only two (large) divisors,
+let's now use gcd:
+
+  gcd(x,N) = p,
+
+as per p|(g_1 - 1). q is then obtained symmetrically, and we're done.
 
 -}
