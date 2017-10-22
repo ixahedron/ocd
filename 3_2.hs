@@ -9,7 +9,7 @@ data PrvKey = PrvKey {p_ :: Integer, q_ :: Integer} deriving (Show)
 
 {-
 
-(a) Ciphertext c === m^e === 892383^103 === 45293 (mod N = 2038667)
+(a) Ciphertext c ≡ m^e ≡ 892383^103 ≡ 45293 (mod N = 2038667)
 *Main> cipher 892383 103 2038667                  
 45293
 good
@@ -37,7 +37,7 @@ decipher :: Integer -> PubKey -> PrvKey -> Integer
 decipher c pub prv = let n = n_ pub in c^d `mod` n
   where d = let e = e_ pub in decryptionExponent e prv
 
--- decryptionExponent e (p,q) = d => ed === 1 (mod (p-1)(q-1))
+-- decryptionExponent e (p,q) = d => ed ≡ 1 (mod (p-1)(q-1))
 decryptionExponent :: Integer -> PrvKey -> Integer
 decryptionExponent e prv = inv e $ (p-1)*(q-1) `div` g
   where g = gcd (p-1) (q-1)
@@ -115,11 +115,11 @@ solveQuadrEq a b c = (r1,r2)
 This seems to have something to do with (multiplicative orders)?
 
 
-  a^(de) === a (mod N = pq) <=> a^(de-1) === 1 mod N    (i)
+  a^(de) ≡ a (mod N = pq) <=> a^(de-1) ≡ 1 mod N    (i)
 
 We note that the above shows
 
-  de-1 === 0 (mod (p-1)(q-1))
+  de-1 ≡ 0 (mod (p-1)(q-1))
 
 Now, both e and d must be relatively prime to (p-1)(q-1),
 so they're odd. That means:
@@ -129,18 +129,18 @@ so they're odd. That means:
 The rest is actually pretty much an application
 of Ex. 2.25, which I have, luckily, done ages ago.
 First of all, note that Ex. 2.25(a) tells us that
-if there are any solutions of x^2 === a (mod N = pq),
+if there are any solutions of x^2 ≡ a (mod N = pq),
 then there are four of them.
 
 So a = 1 has four square roots. Now we see two of them right away,
 because they are trivial: 1 and -1. So we are only interested in
-x and -x with x === 1 (mod N), x === 1 (mod p) and x === -1 (mod q).
+x and -x with x ≡ 1 (mod N), x ≡ 1 (mod p) and x ≡ -1 (mod q).
 Furthermore, if x is a non-trivial solution mod p, we find p by
 taking gcd(x-1,N). From there, the factorisation is easily obtained.
 
 Looking at (i) and (ii), we see that for every g in [1..n-1],
 
-  g^l === 1 (mod N),
+  g^l ≡ 1 (mod N),
 
 and so g^(l/2) is a square root of unity modulo N.
 If g^(l/2) is a trivial solution (+/-1), we ~need to go deeper~.
@@ -203,20 +203,20 @@ mexp m a e = raise a e
 -- 3.11
 
 {-
-                                        === 1 mod p         F.l.t.
-(a) x === c_1 === m * g_1^(s_1) === m * (g^(p-1))^(r_1 * s_1) === m (mod p)
-The same reasoning goes for x === c_2 (mod q), and so it must be that
-x === m (mod N = pq).
+                                        ≡ 1 mod p         F.l.t.
+(a) x ≡ c_1 ≡ m * g_1^(s_1) ≡ m * (g^(p-1))^(r_1 * s_1) ≡ m (mod p)
+The same reasoning goes for x ≡ c_2 (mod q), and so it must be that
+x ≡ m (mod N = pq).
 
 (b)
 
-  g_1 === 1 (mod p)
-  g_2 === 1 (mod q)
+  g_1 ≡ 1 (mod p)
+  g_2 ≡ 1 (mod q)
 
 This means we can use it:
 
      x :=       y :=
-  (g_1 - 1) * (g_2 - 1) === 0 (mod p*q = N)
+  (g_1 - 1) * (g_2 - 1) ≡ 0 (mod p*q = N)
 
 so x*y is a multiple of N! Since N has only two (large) divisors,
 let's now use gcd:
