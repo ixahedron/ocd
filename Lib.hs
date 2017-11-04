@@ -1,4 +1,10 @@
-import Data.Numbers.Primes (primes, primeFactors)
+module Lib ( inv
+           , euc
+           , mexp
+           ) where
+
+
+import Data.Numbers.Primes (primes, isPrime, primeFactors)
 import Data.List (nub)
 
 
@@ -30,5 +36,6 @@ mexp m a e = raise a e
   where raise 0 _ = 0
         raise _ 0 = 1
         raise a 1 = a `mod` m
-        raise a e = let t = if e `mod` 2 == 1 then a `mod` m else 1
+        raise a e | e < 0     = raise (inv a m) (-e)
+                  | otherwise = let t = if e `mod` 2 == 1 then a `mod` m else 1
                     in t * (raise (a^2 `mod` m) (e `div` 2)) `mod` m
