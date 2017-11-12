@@ -67,8 +67,11 @@ korselt ps = (nub ps == ps) && all (\pj -> (n-1) `mod` (pj-1) == 0) ps
 -- 3.15
 {-
 
-*Main> map millerRabinTest ex315list
-[Left (-1),Left 2,Right [2,3,5,7,11,13,17,19,23,29],Right [2,3,5,7,11,13,17,19,23,29],Left 2,Right [2,3,5,7,11,13,17,19,23,29],Left 2]
+*Main> let millerRabin = millerRabinTest 10
+*Main> map millerRabin ex315list
+[Left (-1),Left 2,Right [2,3,5,7,11,13,17,19,23,29],
+Right [2,3,5,7,11,13,17,19,23,29],Left 2,
+Right [2,3,5,7,11,13,17,19,23,29],Left 2]
 
 Let's check how good our test is
 
@@ -80,15 +83,13 @@ noice
 -}
 
 -- Left means composite with a witness, Right - probably prime
-millerRabinTest :: Integer -> Either Integer [Integer]
-millerRabinTest n | n > 2 && even n = Left (-2)
-                  | any (\a -> gcd a n > 1) as = Left (-1) 
-                  | otherwise       = mrt_aux 0 $ map (\a -> mexp n a q) as
+-- s is how many potential witnesses to check
+millerRabinTest :: Int -> Integer -> Either Integer [Integer]
+millerRabinTest s n | n > 2 && even n = Left (-2)
+                    | any (\a -> gcd a n > 1) as = Left (-1) 
+                    | otherwise       = mrt_aux 0 $ map (\a -> mexp n a q) as
   where as = take s primes
         (k,q) = reduceToOdd $ n-1
-
-        -- just how many numbers is needed for MRT to be plausible, ignore
-        s = 10
 
         mrt_aux _    [] = Right as
         mrt_aux 0 (a:xs) | (a `mod` n) `elem` [1,-1,n-1] = mrt_aux 0 xs
@@ -113,3 +114,66 @@ in 3.10. I've only used one exponent and did the rest with
 the Chinese theorem, which is related to Miller-Rabin test.
 
 -}
+
+-- 3.17
+{-
+(a)
+*Main> piFunc 20
+8
+*Main> piFunc 30
+10
+*Main> piFunc 100
+25
+
+(b)
+*Main> map piFunc [10^x | x<-[2..5]] 
+[25,168,1229,9592]
+*Main> map piRatio [10^x | x<-[2..5]] 
+[1.151292546497023,1.1605028868689988,1.131950831715873,1.1043198105999443]
+
+Sure, it's plausible.
+
+-}
+
+piRatio :: Integer -> Double
+piRatio x = (fromInteger . piFunc $ x) / (fromInteger x / ln x)
+
+piFunc :: Integer -> Integer
+piFunc = toInteger . length . piPrimes
+
+piPrimes :: Integer -> [Integer]
+piPrimes x = takeWhile (<=x) primes
+
+ln :: Integer -> Double
+ln x = let e = exp 1 in logBase e $ fromInteger x
+
+-- 3.18
+{-
+
+*Main> pi1 25
+3
+*Main> pi3 25
+5
+*Main> map pi1 [10^x | x<-[1..5]]                     
+[1,11,80,609,4783]
+*Main> map pi3 [10^x | x<-[1..5]]
+[2,13,87,619,4808]
+
+*Main> map pi31Ratio [10^x | x<-[2..5]]
+[1.1818181818181819,1.0875,1.0164203612479474,1.005226845076312]
+
+(c) based on (b), pi3(X) is larger and
+
+ lim   pi3(X)/pi1(X) = 1
+X->inf
+
+-}
+
+pi1 :: Integer -> Integer
+pi1 = toInteger . length . filter (\p -> p `mod` 4 == 1) . piPrimes
+
+pi3 :: Integer -> Integer
+pi3 = toInteger . length . filter (\p -> p `mod` 4 == 3) . piPrimes
+
+pi31Ratio :: Integer -> Double
+pi31Ratio x = (fromInteger . pi3 $ x) / (fromInteger . pi1 $ x)
