@@ -22,21 +22,21 @@ checkCarmichael n | even n || isPrime n = False
 
 {-
 
-(a) After checking a^n === a (mod p) for every divisor p of n
+(a) After checking a^n ≡ a (mod p) for every divisor p of n
 we combine the results using Chinese remainder theorem.
 Recall Ex.2.20: Given the system of equations
-x === a (mod m)
-x === b (mod n)
+x ≡ a (mod m)
+x ≡ b (mod n)
 with gcd(m,n)=1 and using
-c === (b-a) * m^-1 (mod n),
+c ≡ (b-a) * m^-1 (mod n),
 every solution x has the form a + cm + ymn for some y in Z.
 
 We can use this result for our case. The system has the form of
 
-x === a (mod m)
-x === a (mod n)
+x ≡ a (mod m)
+x ≡ a (mod n)
 so
-c === (a-a) * m^-1 === 0 (mod n),
+c ≡ (a-a) * m^-1 ≡ 0 (mod n),
 and so every x is congruent to a modulo mn.
 
 We don't care that our Carmichael number may have more than two
@@ -162,10 +162,10 @@ ln x = let e = exp 1 in logBase e $ fromInteger x
 *Main> map pi31Ratio [10^x | x<-[2..5]]
 [1.1818181818181819,1.0875,1.0164203612479474,1.005226845076312]
 
-(c) based on (b), pi3(X) is larger and
+(c) based on (b), they're roughly the same size and
 
- lim   pi3(X)/pi1(X) = 1
-X->inf
+ lim  pi3(X)/pi1(X) = 1
+ X->∞
 
 -}
 
@@ -177,3 +177,135 @@ pi3 = toInteger . length . filter (\p -> p `mod` 4 == 3) . piPrimes
 
 pi31Ratio :: Integer -> Double
 pi31Ratio x = (fromInteger . pi3 $ x) / (fromInteger . pi1 $ x)
+
+-- 3.19
+{-
+
+(a)
+
+       #primes p 1/2N<=p<=3/2N
+P(N) = -----------------------
+       #integers 1/2N<=n<=3/2N
+
+the denominator is obviously equal to N. Using the prime
+number theorem, rewrite that further
+
+P(N) ~ (1/ln(3/2*N) - 1/ln(1/2*N)) / N = 3/(2*ln(3/2*N)) - 1/(2*ln(N/2))
+     = 3/(2ln3 + 2lnN - 2ln2) - 1/(2lnN - 2ln2)
+
+Plug this into a limit:                        (excuse my ascii-maths)
+
+                                   3                  1
+lim  P(N)/(1/ln(N)) = lim  ( ---------------  -  ----------- ) / (1/lnN)
+N->∞                  N->∞   2ln(3/2) + 2lnN     2lnN - 2ln2
+
+            3lnN            lnN
+= lim  --------------- - -----------
+  N->∞ 2ln(3/2) + 2lnN   2lnN - 2ln2
+
+Using rules of limits, in the end we get
+
+  lim (3lnN/2lnN - lnN/2lnN) = 3/2-1/2 = 1
+N->∞
+
+QED
+
+(b) I think it should be (c2-c1)/lnN in the box?
+
+-}
+
+-- 3.20
+
+{-
+
+(a) P(rand. chosen even N is prime) is zero for large N, obviously.
+We basically pre-throw out half the numbers, so the P for odd N
+is twice the P for completely random N.
+
+(b), (c) basically same
+
+(d) m/(Π^r_i=1 p_i - 1)
+
+(e) ???
+
+-}
+
+-- 3.21
+
+{-
+
+(a) The rule for integration by parts:
+
+∫{a,b} u(x)v'(x)dx = [u(x)v(x)]{a,b} - ∫{a,b} u'(x)v(x)dx
+
+In our case, u(x) = 1/ln(t), and we have no choice but to set v'(x) := 1,
+meaning that v(x) = x. Plug that into the formula:
+
+                                                       ***
+  ∫{2,X} 1/ln(t) * 1 dt = [t/ln(t)]{2,X} - ∫{2,X} t*(1/ln(t))'dt =
+                                      
+  X/lnX - 2/ln2 - ∫{2,X} t * (-1) * 1/(ln(t)^2) * 1/t dt =
+
+  X/lnX - 2/ln2 + ∫{2,X} 1/(ln(t))^2 dt = 
+
+  X/lnX + ∫{2,X} dt/(ln(t))^2 + C
+
+***using the chain rule for derivatives:
+  f(x) = u(v(x)) => f'(x) = u'(v(x)) * v'(x)
+
+  1/ln(t) -> (-1) * 1/(ln(t))^2 * 1/t
+
+QED
+
+(b) First of all:
+
+     Li(X)         X/lnX + ∫{2,X} dt/(ln(t))^2 + C
+lim  ------ = lim  -------------------------------  =
+X->∞ X/lnX   X->∞            X/lnX
+
+          ∫{2,X} dt/(ln(t))^2
+1 + lim  --------------------- + 0
+    X->∞       X/lnX
+
+
+For this, let's regard integrals as areas under the curve.
+The function in the integral in (a), which is 1/(ln(t))^2,
+has a somewhat hyperbolish-looking curve, because ln(t)^2
+is a positively monotone function. So it follows that
+on the interval from 2 to X it is a monotone decreasing
+function. Let's adhere to the hint and use two rectangles
+to make a shitty estimation of two regions on the X axis:
+from 2 to √X and from √X to X.
+
+  [2, √X]:
+  (√X-2)(1/ln(2)^2) = (√X-2)/(ln(2)^2)
+
+  [√X, X]:
+  (X-√X)(1/ln(√X)^2) = (X-√X)/(ln(√X)^2/4) = 4*(X-√X)/ln(√X)^2
+
+Plug these estimations into the limit, and we see that
+both of those resolve to zero, because both numerators
+grow slower than the denominator:
+
+  (√X-2)/(ln(2)^2)/(X/lnX) = ((√X-2)*lnX)/(X*(ln(2)^2)) -> 0
+
+  (4*(X-√X)/lnX^2)/(X/lnX) = 4*(X-√X)/(X*lnX) -> 0
+
+So the whole limit is 1 + 0 + 0 = 1.
+
+(c) So formula 3.12 is:
+
+  π(X) = Li(X) + O(√X * lnX)
+
+Using (b) yields:
+
+  π(X) ≈ X/lnX + O(√X * lnX)
+
+For large values of X, O(√X * lnX) is negligible
+in comparison to X/lnX, so we indeed get
+
+  π(X) ≈ X/lnX for large values of X
+
+QED
+
+-}
