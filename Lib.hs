@@ -2,6 +2,9 @@ module Lib ( inv
            , euc
            , mexp
            , ln
+           , millerRabinTest
+           , checkCarmichael 
+           , reduceToOdd
            ) where
 
 
