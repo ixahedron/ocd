@@ -206,7 +206,7 @@ N->∞                  N->∞   2ln(3/2) + 2lnN     2lnN - 2ln2
 Using rules of limits, in the end we get
 
   lim (3lnN/2lnN - lnN/2lnN) = 3/2-1/2 = 1
-N->∞
+  N->∞
 
 QED
 
