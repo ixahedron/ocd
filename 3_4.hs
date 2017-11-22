@@ -1,4 +1,4 @@
-import Lib
+import Lib (mexp)
 import Data.Numbers.Primes (primeFactors, isPrime, primes)
 import Data.List (nub)
 
@@ -47,7 +47,14 @@ Notice this immediately gives us the answer to (d), why Carmichael
 numbers have to have only distinct prime divisors: otherwise
 the CRT wouldn't work.
 
-(c) 
+(c) Suppose n is a Carmichael number, and n is even.
+
+(n-1)^n ≡ (n-1)^2k ≡ (n-1) mod n
+(n-1) ≡ -1 mod n => ((n-1)^2)^k ≡ 1 mod n
+(n-1)^n - (n-1) ≡ 1 + 1 ≡ 2 mod n
+2 ≡/≡ 0 mod n
+
+Contradiction, QED
 
 (e) Korselt's criterion:
 A composite number n is a Carmichael number iff n = p_1*p_2*...*p_n
@@ -84,6 +91,10 @@ noice
 
 -- Left means composite with a witness, Right - probably prime
 -- s is how many potential witnesses to check
+--
+-- I cheat a bit and test first s primes, not random numbers
+-- (don't think it makes much of a difference except in
+-- corner cases, thoughts?)
 millerRabinTest :: Int -> Integer -> Either Integer [Integer]
 millerRabinTest s n | n > 2 && even n = Left (-2)
                     | any (\a -> gcd a n > 1) as = Left (-1) 
@@ -226,7 +237,11 @@ is twice the P for completely random N.
 
 (d) m/(Π^r_i=1 p_i - 1)
 
-(e) ???
+(Why?)
+
+(e) I feel like it's the same as in (d) if we `nub` the factorization
+(remove all but one occurences of the repeating factors), but
+I can't for the love of me prove it (or even empirically test it).
 
 -}
 
