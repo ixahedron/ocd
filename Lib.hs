@@ -2,6 +2,9 @@ module Lib ( inv
            , euc
            , mexp
            , ln
+           , isSquare
+           , intSqrt
+           , combs
            , millerRabinTest
            , checkCarmichael 
            , reduceToOdd
@@ -48,6 +51,19 @@ mexp m a e = raise a e
 ln :: Integer -> Double
 ln x = let e = exp 1 in logBase e $ fromInteger x
 
+-- is an integer a perfect square?
+isSquare :: Integral n => n -> Bool
+isSquare n = let s = intSqrt n in s*s == n
+
+-- take an integer square root. Obviously only works
+-- correctly if n = a^2, otherwise there's data loss.
+intSqrt :: Integral n => n -> n
+intSqrt = truncate . sqrt . fromIntegral
+
+-- all vectors of length n with elems taken from a given charset
+-- combs [0,1] 3 = [[0,0],[0,1],[1,0],[1,1]] e.g.
+combs :: [a] -> Integer -> [[a]]
+combs cs n = mapM (const cs) [1..n]
 
 -- Left means composite with a witness, Right - probably prime
 -- s is how many potential witnesses to check
