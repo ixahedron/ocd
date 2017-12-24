@@ -2,12 +2,17 @@ module Lib ( inv
            , euc
            , mexp
            , ln
+           , lnR
+           , e
            , isSquare
            , intSqrt
            , combs
+           , solveEq
            , millerRabinTest
            , checkCarmichael 
            , reduceToOdd
+           , reduceToPrime
+           , primePowers
            ) where
 
 
@@ -48,8 +53,16 @@ mexp m a e = raise a e
                     in t * (raise (a^2 `mod` m) (e `div` 2)) `mod` m
 
 -- natural logarithm
-ln :: Integer -> Double
-ln x = let e = exp 1 in logBase e $ fromInteger x
+lnR :: Floating a => a -> a
+lnR = logBase e
+
+-- euler's constant
+e :: Floating a => a
+e = exp 1
+
+-- ln for integer arguments, kinda legacy I guess?
+ln :: Floating a => Integer -> a
+ln = lnR . fromInteger
 
 -- is an integer a perfect square?
 isSquare :: Integral n => n -> Bool
@@ -64,6 +77,14 @@ intSqrt = truncate . sqrt . fromIntegral
 -- combs [0,1] 3 = [[0,0],[0,1],[1,0],[1,1]] e.g.
 combs :: [a] -> Integer -> [[a]]
 combs cs n = mapM (const cs) [1..n]
+
+-- dumb bruteforce solver of equations modulo N
+-- solveEq m n = [t] -> t^2 === m (mod n)
+solveEq :: Integer -> Integer -> [Integer]
+solveEq m n = solve_aux [1..n]
+  where solve_aux [] = []
+        solve_aux (t:ts) | mexp n t 2 == m `mod` n = t : solve_aux ts
+                         | otherwise = solve_aux ts
 
 -- Left means composite with a witness, Right - probably prime
 -- s is how many potential witnesses to check
@@ -86,6 +107,15 @@ reduceToOdd :: Integer -> (Integer, Integer)
 reduceToOdd n = reduce 0 n
   where reduce k n | odd n = (k,n)
                    | otherwise = reduce (k+1) $ n `div` 2
+
+reduceToPrime :: Integer -> Integer
+reduceToPrime n | isPrime n = n
+                | otherwise = reduceToPrime $  n `div` (head . primeFactors $ n)
+
+-- an infinite list of numbers with 1 unique factor
+-- [2,3,4,5,7,8,9,11,...]
+primePowers :: [Integer]
+primePowers = mergeAll [[p^i | i <- [1..]] | p <- primes]
 
 -- checks (using primeFactors, might be slow?) whether
 -- a given number is Carmichael
