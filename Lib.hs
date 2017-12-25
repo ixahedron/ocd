@@ -17,6 +17,7 @@ module Lib ( inv
 
 
 import Data.Numbers.Primes (primes, isPrime, primeFactors)
+import Data.List.Ordered (mergeAll)
 import Data.List (nub)
 
 

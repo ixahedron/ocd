@@ -318,19 +318,18 @@ combineRels :: Integer -> [(Integer, [Integer])] -> Maybe (Integer, Integer)
 combineRels _ [] = Nothing
 combineRels n ((s1,rfs):rs) = comb_aux rs
   where comb_aux [] = let fcs = group . sort $ rfs;
-                          sqre = all even . map length 
-                          half = concat . map (\l -> take ((length l) `div` 2) l)
                           q = gcd n $ s1 - (product . half $ fcs)
                       in if sqre fcs && q /= 1 && q /= n
                          then Just (q, n `div` q)
                          else combineRels n rs
         comb_aux ((s2,lfs):ls) = let fcs = group . sort $ lfs ++ rfs;
-                                     sqre = all even . map length
-                                     half = concat . map (\l -> take ((length l) `div` 2) l)
                                      q = gcd n $ s1*s2 - (product . half $ fcs);
                                  in if sqre fcs && q /= 1 && q /= n
                                     then Just (q, n `div` q)
                                     else comb_aux ls
+
+        sqre = all even . map length
+        half = concat . map (\l -> take ((length l) `div` 2) l)
 
 
 sieve :: Integer -> Integer -> [Integer] -> [(Integer, [Integer])]
