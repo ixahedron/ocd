@@ -4,6 +4,7 @@ module Lib ( inv
            , ln
            , lnR
            , e
+           , isBSmooth
            , isSquare
            , intSqrt
            , combs
@@ -64,6 +65,10 @@ e = exp 1
 -- ln for integer arguments, kinda legacy I guess?
 ln :: Floating a => Integer -> a
 ln = lnR . fromInteger
+
+-- b-smooth := has factors <=b only
+isBSmooth :: Integer -> Integer -> Bool
+isBSmooth b x = let xfactors = primeFactors x in all (<= b) xfactors
 
 -- is an integer a perfect square?
 isSquare :: Integral n => n -> Bool
