@@ -29,17 +29,17 @@ inv a p = if gcd a p == 1
           else error "can't compute inverse if gcd =/= 1"
   where norm x = if x >= 0 then x else x+p
 
--- euc a b = (x,y) => ax + by = (gcd a b)^2
+-- euc a b = (x,y) => ax + by = gcd a b
 euc :: Integral n => n -> n -> (n,n)
-euc a b = (g*x,g*y)
-  where g = gcd a b
-        (x,y) = euc' (a `div` g) (b `div` g)
-        euc' a b = case b of
-                 1 -> (0, 1)
-                 _ -> let (e, f) = euc' b d
-                    in (f, e - c*f)
-          where c = a `div` b
-                d = a `mod` b
+euc a b | a `mod` b == 0 = (0,1)
+        | otherwise = (y,x-y*(a `div` b))
+  where (x,y) = euc b $ a `mod` b
+
+eGCD :: Integral n => n -> n -> (n,n,n)
+eGCD a b | mod a b == 0 = (0,1,b)
+         | otherwise = (y,x-y*(a `div` b),z)
+        where
+          (x,y,z) = eGCD b $ a `mod` b
 
 
 -- modular (fast) exponentiation using binary method
@@ -53,6 +53,12 @@ mexp m a e = raise a e
         raise a e | e < 0     = raise (inv a m) (-e)
                   | otherwise = let t = if e `mod` 2 == 1 then a `mod` m else 1
                     in t * (raise (a^2 `mod` m) (e `div` 2)) `mod` m
+
+-- chinese remainder theorem
+crt :: [Integer] -> [Integer] -> Integer
+crt ns as = let prod = product ns
+                ls = [let (_,x2) = euc x $ prod `div` x in x2 | x <- ns ]
+            in (sum [ div (x*y*prod) z | (x,y,z) <- zip3 as ls ns ]) `mod` prod
 
 -- natural logarithm
 lnR :: Floating a => a -> a

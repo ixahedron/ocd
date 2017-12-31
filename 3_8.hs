@@ -1,4 +1,4 @@
-import Lib (isBSmooth, mexp, inv)
+import Lib (isBSmooth, mexp, inv, euc)
 import Data.Numbers.Primes (primeFactors)
 
 -- 3.36
@@ -8,7 +8,7 @@ import Data.Numbers.Primes (primeFactors)
 (a)
 λ> all id $ map (\i -> isBSmooth 5 $ mexp 19079 17 i) [3030, 6892, 18312]
 True
-(b) TODO: write or snatch the fucking Gaussian elimination
+(b) projobs, but the numbers are down there
 
 (c)
 λ> isBSmooth 5 $ (19 * (mexp p (inv 17 p) 12400)) `mod` p
@@ -25,6 +25,7 @@ True
 
 (17734,10838,17002) mod 19078
 
+(d)
 λ> let x = (12400 + 7*xx + yy) `mod` (p-1)
 λ> x
 13830
@@ -33,14 +34,7 @@ True
 
 -}
 
-eGCD:: Integer -> Integer -> (Integer, Integer, Integer)
-eGCD a b | mod a b == 0 = (0,1,b)
-         | otherwise = (y,x-y*(div a b),z)
-        where
-          (x,y,z) = eGCD b $ mod a b
-
-
 crt :: [Integer] -> [Integer] -> Integer
 crt ns as  = let prod = product ns
-                 ls = [let (_,x2,_) = eGCD x (div prod x) in x2 | x <- ns ]
-             in (sum [ div (x*y*prod) z | (x,y,z)<- zip3 as ls ns ]) `mod` prod
+                 ls = [let (_,x2) = euc x $ prod `div` x in x2 | x <- ns ]
+             in (sum [ div (x*y*prod) z | (x,y,z) <- zip3 as ls ns ]) `mod` prod
