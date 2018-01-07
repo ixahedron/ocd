@@ -6,21 +6,21 @@ import Data.Maybe (isJust)
 
 {-
 
-(a) by FLT, a^(p-1) === 1 (mod p)
+(a) by FLT, a^(p-1) ≡ 1 (mod p)
 Rewrite that using the squares' difference formula:
 (I think it's based on fields' properties?
 Anyway, Z/p is a field, so we're alright)
 
-  a^(p-1) - 1 === 0 (mod p) <=>
-  (a^((p-1)/2) - 1) (a^((p-1)/2) + 1) === 0 (mod p)
+  a^(p-1) - 1 ≡ 0 (mod p) <=>
+  (a^((p-1)/2) - 1) (a^((p-1)/2) + 1) ≡ 0 (mod p)
 
 So either a^(p-1)/2 is congruent mod p to 1 or -1, QED
 
 (b)
 =>: p odd prime => there exists a primitive root g
-with a === g^i, i in Z.
+with a ≡ g^i, i in Z.
 
-  g^(i(p-1)/2) === 1
+  g^(i(p-1)/2) ≡ 1
 
 So I'm too lazy to search for the name of the theorem,
 but there was something about order of g p-1 | (i(p-1))/2, right?
@@ -28,8 +28,8 @@ Then it must be that i = 2j, j in Z. So i is even and g^i is
 a quadratic residue.
 
 <=: 
-  a === x^2 (mod p)
-  a^((p-1)/2) === x^(p-1) === 1 (mod p)
+  a ≡ x^2 (mod p)
+  a^((p-1)/2) ≡ x^(p-1) ≡ 1 (mod p)
   
 QED
 
@@ -37,19 +37,19 @@ QED
 If p∤a, the (-1) part follows from (a) and (b).
 So let's quickly deal with p|a:
 
-  p|a <=> a = kp, k in Z <=> a === 0 (mod p)
-  0^((p-1)/2) === 0 (mod p), which corresponds to (a/p).
+  p|a <=> a = kp, k in Z <=> a ≡ 0 (mod p)
+  0^((p-1)/2) ≡ 0 (mod p), which corresponds to (a/p).
 
 QED
 
 (d) (-1/p) = (-1)^((p-1)/2) by (c).
 
-Let p === 1 (mod 4).
+Let p ≡ 1 (mod 4).
 Then p-1 = 4k, k in Z, and (p-1)/2 = 2k, k in Z.
 So 2k is even, and (-1)^2k = 1.
 
-Now let p === 3 (mod 4).
-Then p-1 === 4k + 2, k in Z, so (p-1)/2 = 2k+1, an odd number.
+Now let p ≡ 3 (mod 4).
+Then p-1 ≡ 4k + 2, k in Z, so (p-1)/2 = 2k+1, an odd number.
 So (-1)^(2k+1) = -1. QED
 
 -}
@@ -61,19 +61,19 @@ So (-1)^(2k+1) = -1. QED
 (a) directly follows from 3.37(c)
 
 (b)
-let p === 1 mod 8 <=> p = 8k+1, k in Z, so (a/p) = 1.
+let p ≡ 1 mod 8 <=> p = 8k+1, k in Z, so (a/p) = 1.
 (-1)^((p-1)(p+1)/8) = (-1)^(8k(8k+2)/8) = (-1)^(4k*(8k+2))
 So it's an even power resulting in 1.
 
-let p === 3 mod 8 <=> p = 8k+3, k in Z, so (a/p) = -1.
+let p ≡ 3 mod 8 <=> p = 8k+3, k in Z, so (a/p) = -1.
 (-1)^((8k+3)^2-1)/8 = (-1)^(64k^2+48k+8)/8 = (-1)^(8k^2+6k+1)
 which yields an odd power resulting in -1.
 
-let p === 5 mod 8 <=> p = 8k+5, k in Z, so (a/p) = -1.
+let p ≡ 5 mod 8 <=> p = 8k+5, k in Z, so (a/p) = -1.
 (-1)^((8k+5)^2-1)/8 = (-1)^(8k^2+10k+3)
 again, an odd power => -1
 
-let p === 7 mod 8 <=> p = 8k+7, k in Z, so (a/p) = 1.
+let p ≡ 7 mod 8 <=> p = 8k+7, k in Z, so (a/p) = 1.
 (-1)^(64k^2+112k+48)/8 = (-1)^(8k^2+14k+6)
 an even power yielding 1.
 QED
@@ -99,7 +99,7 @@ QED
 {-
 
 (a) Adhering to the hint, write          3.37b
-  b^2 === a^(p+1 / 2) === a * a^(p-1 / 2) === a, QED
+  b^2 ≡ a^(p+1 / 2) ≡ a * a^(p-1 / 2) ≡ a, QED
 
 (b)
 
@@ -174,34 +174,34 @@ Nothing
 <=: trivial. g^m = g^3k => (g^k)^3 is a cube.
 
 =>:
-i. a === g^r, r === 1 mod 3:
-Assume a is a cubic residue, a === c^3.
-1 === c^(p-1) === (c^3)^((p-1)/3) === (g^r)^((p-1)/3)
-  === (g^(3k+1))^((p-1)/3) === g^k(p-1) * g^((p-1)/3)
-  === 1^k * g^((p-1)/3)
-So g^((p-1)/3) === 1, contradicting that g is a primitive root.
+i. a ≡ g^r, r ≡ 1 mod 3:
+Assume a is a cubic residue, a ≡ c^3.
+1 ≡ c^(p-1) ≡ (c^3)^((p-1)/3) ≡ (g^r)^((p-1)/3)
+  ≡ (g^(3k+1))^((p-1)/3) ≡ g^k(p-1) * g^((p-1)/3)
+  ≡ 1^k * g^((p-1)/3)
+So g^((p-1)/3) ≡ 1, contradicting that g is a primitive root.
 Contradiction => a isn't a cubic residue.
 
-i. a === g^r, r === 2 === -1 mod 3:
-Assume a is a cubic residue, a === c^3.
-1 === c^(p-1) === (c^3)^((p-1)/3) === (g^r)^((p-1)/3)
-  === (g^(3k-1))^((p-1)/3) === g^k(p-1) * g^(-(p-1)/3)
-  === 1^k * (g^-1)^((p-1)/3)
+ii. a ≡ g^r, r ≡ 2 ≡ -1 mod 3:
+Assume a is a cubic residue, a ≡ c^3.
+1 ≡ c^(p-1) ≡ (c^3)^((p-1)/3) ≡ (g^r)^((p-1)/3)
+  ≡ (g^(3k-1))^((p-1)/3) ≡ g^k(p-1) * g^(-(p-1)/3)
+  ≡ 1^k * (g^-1)^((p-1)/3)
 Recall that an inverse of a generator is a generator.
-So (g^-1)^((p-1)/3) === 1, contradicting that g^-1,
+So (g^-1)^((p-1)/3) ≡ 1, contradicting that g^-1,
 and with it g, are primitive roots.
 Contradiction => a isn't a cubic residue.
 
 So a is a cubic residue => 3|log_g(a), QED
 
-(d) So p === 2 mod 3 <=> p = 3k+2
-By FLT, a^(p-1) === (g^r)^(p-1) === 1 mod p
+(d) So p ≡ 2 mod 3 <=> p = 3k+2
+By FLT, a^(p-1) ≡ (g^r)^(p-1) ≡ 1 mod p
 Let's substitute in our p:
-(g^r)^(3k+1) === 1 mod p
+(g^r)^(3k+1) ≡ 1 mod p
 This by itself isn't sufficient, but we can raise both sides
 of the equation to some suitable power, let's say 3:
-(g^r)^3(p-1) === 1^3 mod p
-(g^r)^(3p-3) === (g^r)^(9k+3) === (g^r(3k+1))^3
+(g^r)^3(p-1) ≡ 1^3 mod p
+(g^r)^(3p-3) ≡ (g^r)^(9k+3) ≡ (g^r(3k+1))^3
 So, indeed, every a is a cubic residue.
 
 -}
