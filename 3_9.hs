@@ -134,8 +134,8 @@ resulting quadratic residue, be it h or g^-1 * h, repeat.
 
 To see why it's only possible to find out the first s bits,
 let's look at that square root. Let j be a quadratic residue
-(either j := h or g^-1 * h). Then we know that j = g^2r from
-Proof of 3.61.
+(either j := h or g^-1 * h, whichever). Then we know that
+j = g^2r from Proof of 3.61.
 So the square root of j is either x1 := g^r or x2 := g^(r+(p-1)/2).
 Note that this means that if x = g^r, then x is obtained
 from j by shifting 2r one bit to the right.
@@ -159,6 +159,9 @@ mne_tyazhelo.png
 
 {-
 
+(a) too lazy to prove directly, but follows from (c)
+'cause a = g^r1, b = g^r2, 3|r1,r2 => 3|r1*r2
+
 (b) let's say (a,b) = (3,12):
 λ> cubRoot31 3
 Nothing
@@ -166,6 +169,40 @@ Nothing
 Nothing
 λ> cubRoot31 36
 Nothing
+
+(c) 
+<=: trivial. g^m = g^3k => (g^k)^3 is a cube.
+
+=>:
+i. a === g^r, r === 1 mod 3:
+Assume a is a cubic residue, a === c^3.
+1 === c^(p-1) === (c^3)^((p-1)/3) === (g^r)^((p-1)/3)
+  === (g^(3k+1))^((p-1)/3) === g^k(p-1) * g^((p-1)/3)
+  === 1^k * g^((p-1)/3)
+So g^((p-1)/3) === 1, contradicting that g is a primitive root.
+Contradiction => a isn't a cubic residue.
+
+i. a === g^r, r === 2 === -1 mod 3:
+Assume a is a cubic residue, a === c^3.
+1 === c^(p-1) === (c^3)^((p-1)/3) === (g^r)^((p-1)/3)
+  === (g^(3k-1))^((p-1)/3) === g^k(p-1) * g^(-(p-1)/3)
+  === 1^k * (g^-1)^((p-1)/3)
+Recall that an inverse of a generator is a generator.
+So (g^-1)^((p-1)/3) === 1, contradicting that g^-1,
+and with it g, are primitive roots.
+Contradiction => a isn't a cubic residue.
+
+So a is a cubic residue => 3|log_g(a), QED
+
+(d) So p === 2 mod 3 <=> p = 3k+2
+By FLT, a^(p-1) === (g^r)^(p-1) === 1 mod p
+Let's substitute in our p:
+(g^r)^(3k+1) === 1 mod p
+This by itself isn't sufficient, but we can raise both sides
+of the equation to some suitable power, let's say 3:
+(g^r)^3(p-1) === 1^3 mod p
+(g^r)^(3p-3) === (g^r)^(9k+3) === (g^r(3k+1))^3
+So, indeed, every a is a cubic residue.
 
 -}
 
