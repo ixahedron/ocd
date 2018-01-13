@@ -52,7 +52,7 @@ factorPubK pubk = PrvK (head fct) (head . tail $ fct)
 {-
 
 (a) d_k c = m = r || (r ⊕ m'). We know that ⊕ (xor)
-is inversible, so compute
+is invertible, so compute
   m' = r ⊕ (r ⊕ m') = (r ⊕ r) ⊕ m' = 0 ⊕ m' = m'
 
 (b) 2b/b = 2
