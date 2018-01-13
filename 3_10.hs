@@ -25,12 +25,12 @@ pub342b = PubK 3149 2013
 pub342c = PubK 781044643 568980706
 
 data PubK = PubK { pubN :: Integer
-                    , pubA :: Integer
-                    }
+                 , pubA :: Integer
+                 }
   deriving (Eq, Ord, Show)
 data PrvK = PrvK { prvP :: Integer
-                    , prvQ :: Integer
-                    }
+                 , prvQ :: Integer
+                 }
   deriving (Eq, Ord, Show)
 
 
