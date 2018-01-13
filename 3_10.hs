@@ -26,10 +26,10 @@ pub342c = PubK 781044643 568980706
 
 data PubK = PubK { pubN :: Integer
                  , pubA :: Integer
-                 }
+                 } deriving Show
 data PrvK = PrvK { prvP :: Integer
                  , prvQ :: Integer
-                 }
+                 } deriving Show
 
 
 encrypt :: PubK -> Bool -> Integer -> Integer
@@ -43,9 +43,8 @@ decrypt prvk c = case jacobi c $ prvP prvk of
                    _ -> error "incorrect jacobi"
 
 factorPubK :: PubK -> PrvK
-factorPubK pubk = PrvK (head fct) (head . tail $ fct)
-  where fct = primeFactors $ pubN pubk
-
+factorPubK pubk = let [p,q] = primeFactors $ pubN pubk
+                  in PrvK p q
 
 -- 3.43
 
