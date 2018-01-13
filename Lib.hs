@@ -14,6 +14,7 @@ module Lib ( inv
            , reduceToOdd
            , reduceToPrime
            , primePowers
+           , jacobi
            ) where
 
 
@@ -115,11 +116,13 @@ millerRabinTest s n | n > 2 && even n = Left (-2)
                          | otherwise = mrt_aux (j+1) ((mexp n a 2):xs)
 
 -- reduces a number to the product of all its odd divisors
+-- reduceToOdd n = (k,p) => n = 2^k * p
 reduceToOdd :: Integer -> (Integer, Integer)
 reduceToOdd n = reduce 0 n
   where reduce k n | odd n = (k,n)
                    | otherwise = reduce (k+1) $ n `div` 2
 
+-- reduces a number to just the largest of the factors
 reduceToPrime :: Integer -> Integer
 reduceToPrime n | isPrime n = n
                 | otherwise = reduceToPrime $  n `div` (head . primeFactors $ n)
@@ -137,3 +140,21 @@ checkCarmichael n | even n || isPrime n = False
                   | otherwise           = all fermat fcts
   where fcts = primeFactors n
         fermat p = all (\a -> mexp p a n == a) [0..p-1]
+
+-- Jacobi symbol
+jacobi :: Integer -> Integer -> Integer
+jacobi (-1) b | b `mod` 4 == 1 = 1
+              | b `mod` 4 == 3 = -1
+              | otherwise = error "even b"
+jacobi   2  b | (b `mod` 8) `elem` [1,7] = 1
+              | (b `mod` 8) `elem` [3,5] = -1
+              | otherwise = error "even b"
+jacobi   a  b | a `mod` b == b-1 = jacobi (-1) b
+              | a `mod` b == 2   = jacobi 2 b
+              | even a = let (k,p) = reduceToOdd a;
+                             q = if even k then 1 else jacobi 2 b
+                         in q * jacobi p b
+              | odd b = case (a `mod` 4, b `mod` 4) of
+                          (3,3) -> jacobi (-1) a * (jacobi (b `mod` a) a)
+                          _ -> jacobi (b `mod` a) a
+              | otherwise = error "even b"
