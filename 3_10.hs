@@ -27,11 +27,9 @@ pub342c = PubK 781044643 568980706
 data PubK = PubK { pubN :: Integer
                  , pubA :: Integer
                  }
-  deriving (Eq, Ord, Show)
 data PrvK = PrvK { prvP :: Integer
                  , prvQ :: Integer
                  }
-  deriving (Eq, Ord, Show)
 
 
 encrypt :: PubK -> Bool -> Integer -> Integer
