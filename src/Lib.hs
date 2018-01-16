@@ -1,9 +1,11 @@
 module Lib ( inv
            , euc
+           , eGCD
            , mexp
            , ln
            , lnR
            , e
+           , crt
            , isBSmooth
            , isSquare
            , intSqrt
@@ -47,7 +49,7 @@ eGCD a b | mod a b == 0 = (0,1,b)
 -- mexp m a e = a^e (mod m)
 mexp :: Integral n => n -> n -> n -> n
 mexp 1 _ _ = 0
-mexp m a e = raise a e
+mexp m x y = raise x y
   where raise 0 _ = 0
         raise _ 0 = 1
         raise a 1 = a `mod` m
@@ -118,7 +120,7 @@ millerRabinTest s n | n > 2 && even n = Left (-2)
 -- reduces a number to the product of all its odd divisors
 -- reduceToOdd n = (k,p) => n = 2^k * p
 reduceToOdd :: Integer -> (Integer, Integer)
-reduceToOdd n = reduce 0 n
+reduceToOdd m = reduce 0 m
   where reduce k n | odd n = (k,n)
                    | otherwise = reduce (k+1) $ n `div` 2
 
