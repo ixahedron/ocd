@@ -26,10 +26,10 @@ import Data.List (nub)
 
 
 -- multiplicative inverse using EEA
-inv :: Integral n => n -> n -> n 
+inv :: (Integral n, Show n) => n -> n -> n 
 inv a p = if gcd a p == 1
           then norm . fst $ euc a p
-          else error "can't compute inverse if gcd =/= 1"
+          else error $ show p ++ " can't compute inverse if gcd =/= 1 " ++ show a
   where norm x = if x >= 0 then x else x+p
 
 -- euc a b = (x,y) => ax + by = gcd a b
@@ -47,7 +47,7 @@ eGCD a b | mod a b == 0 = (0,1,b)
 
 -- modular (fast) exponentiation using binary method
 -- mexp m a e = a^e (mod m)
-mexp :: Integral n => n -> n -> n -> n
+mexp :: (Show n, Integral n) => n -> n -> n -> n
 mexp 1 _ _ = 0
 mexp m x y = raise x y
   where raise 0 _ = 0
