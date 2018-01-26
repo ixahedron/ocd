@@ -56,7 +56,7 @@ PrvSKey {d_ = 18408628619}
 
 {-
 
-s === hash(m)^dA (mod N_A) => s^eA === (hash(m)^dA)^eA === hash(m)
+s ≡ hash(m)^dA (mod N_A) => s^eA ≡ (hash(m)^dA)^eA ≡ hash(m)
 As for why that works: hash functions are difficult to invert and
 additionally there aren't many collisions, and N_A is, as always,
 difficult to factor, so the chances of Eve finding a valid signature
@@ -109,8 +109,8 @@ verifyEG (EGVerK (EGS p g) a) d (s1,s2) =
 
 {-
 
-A^S1 * S1^S2 === (A^S1*A^jS2) * g^(iS2) ===
-A^(S1-S1) * g^iS2 === g^(-S1*i*(j^-1)) === g^D (mod p)
+A^S1 * S1^S2 ≡ (A^S1*A^jS2) * g^(iS2) ≡
+A^(S1-S1) * g^iS2 ≡ g^(-S1*i*(j^-1)) ≡ g^D (mod p)
 QED
 
 -}
@@ -120,39 +120,57 @@ QED
 {-
 
 (a) S1 = g^k (mod p), so S1 will be the same for both documents.
-(b) The answer: a === (S2'-S2)^-1(D*S2'-D'S2)S^-1 (mod p-1)
+(b) The answer: a ≡ (S2'-S2)^-1(D*S2'-D'S2)S^-1 (mod p-1)
 
-  S2 === (D-aS1)k^-1 <=> a === D*S1^-1 - (S1^-1)*S2*k (mod p-1)
-  S2' === (D'-aS1')k^-1, S1=S1' => a === D'*S1^-1 - (S1^-1)S2'*k
+  S2 ≡ (D-aS1)k^-1 <=> a ≡ D*S1^-1 - (S1^-1)*S2*k (mod p-1)
+  S2' ≡ (D'-aS1')k^-1, S1=S1' => a ≡ D'*S1^-1 - (S1^-1)S2'*k
 
 Use the usual Gaussian elimination:
 
-  S2'a === D*S2'*S1^-1 - S2*S2'*S1^-1*k (mod p-1)
-  S2*a === D'*S2*S1^-1 - S2*S2'*S1^-1*k (mod p-1)
+  S2'a ≡ D*S2'*S1^-1 - S2*S2'*S1^-1*k (mod p-1)
+  S2*a ≡ D'*S2*S1^-1 - S2*S2'*S1^-1*k (mod p-1)
 
-  (S2'-S2)a === (D*S2'-D'*S2)S1^-1
+  (S2'-S2)a ≡ (D*S2'-D'*S2)S1^-1
 
-  a === (S2'-S2)^-1(D*S2'-D'*S2)S1^-1 (mod p-1)
+  a ≡ (S2'-S2)^-1(D*S2'-D'*S2)S1^-1 (mod p-1)
 
 Now, we're not guaranteed that any of those inverses will have
-gcd(x,p-1)=1. I don't yet know how it would work.
-(c) doesn't work for the same reason, obvs.
+gcd(x,p-1)=1, i.e. that it will be to take an inverse. If
+that's the case, lucky us, we're done. Otherwise, rewrite that
+equation for easier reasoning:
+
+   := φ*a
+  S1(S2'-S2)a ≡ D*S2'-D'*S2 (mod p-1)
+
+We've already established that gcd(φ,p-1) = c > 1.
+That means this equation will have c solutions. If we can get
+them, one of them will be equal to a, the secret key.
+If the c also divides the right-hand side of the equation, we
+can divide by c, solve the resulting equation, then add (up
+to c) multiples of p-1/c until we get our private key,
+verifiable by looking for g^x ≡ A (mod p).
+Unfortunately I don't know how to generalise for when c
+doesn't immediately divide the right-hand side.
+
+(c) λ> a_ <$> recovera vk sg1 sg2
+Just 72729
 
 -}
 
-recovera :: ElGamalSS -> (Integer, EGSignature) -> (Integer, EGSignature) -> Maybe EGSgnK
-recovera ss@(EGS p g) (d,(s1,s2)) (d',(s1',s2'))
+recovera :: EGVerK -> (Integer, EGSignature) -> (Integer, EGSignature) -> Maybe EGSgnK
+recovera (EGVerK ss@(EGS p g) dA) (d,(s1,s2)) (d',(s1',s2'))
     | s1 /= s1' = Nothing
     | gcd s1 (p-1) == 1 && gcd (s2'-s2) (p-1) == 1 = Just (EGSgnK ss $ a)
-    | otherwise = Just (EGSgnK ss $ a_crt) 
-  where a = (s2'ds2 * s1i * (d*s2'-d'*s2)) `mod` (p-1)
-        a_crt = crt ns (map (\n -> (s2'ds2_crt n * s1i_crt n * (d*s2'-d'*s2)) `mod` n) ns)
+    | ds2 `mod` dvsr == 0 = Just (EGSgnK ss $ a_choice)
+    | otherwise = Nothing
+  where a = (inv (s2'-s2) (p-1) * inv s1 (p-1) * ds2) `mod` (p-1)
+        a_choice = head $ filter (\x -> mexp p g x == dA) aas
+          where aa = (ds2 `div` dvsr)*inv (s1s2 `div` dvsr) ((p-1) `div` dvsr)
+                aas = map (\x -> (aa+x*((p-1) `div` dvsr)) `mod` (p-1)) [0..dvsr-1]
 
-        ns = primeFactors $ p-1
-        s1i = inv s1 $ p-1
-        s2'ds2 = inv (s2'-s2) $ p-1
-        s1i_crt n = inv s1 n
-        s2'ds2_crt n = inv (s2'-s2) n
+        dvsr = gcd (p-1) $ s1s2
+        ds2 = d*s2' - d'*s2
+        s1s2 = s1*(s2'-s2)
 
 
 -- 4.9
