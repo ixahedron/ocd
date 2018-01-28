@@ -1,4 +1,4 @@
-import Lib (mexp, inv, crt)
+import Lib (mexp, inv, sbg)
 import Data.Numbers.Primes (primeFactors)
 
 -- 4.1
@@ -135,9 +135,9 @@ Use the usual Gaussian elimination:
   a ≡ (S2'-S2)^-1(D*S2'-D'*S2)S1^-1 (mod p-1)
 
 Now, we're not guaranteed that any of those inverses will have
-gcd(x,p-1)=1, i.e. that it will be to take an inverse. If
-that's the case, lucky us, we're done. Otherwise, rewrite that
-equation for easier reasoning:
+gcd(x,p-1)=1, i.e. that it will be possible to take an inverse.
+If that's the case, lucky us, we're done. Otherwise, rewrite
+that equation for easier reasoning:
 
    := φ*a
   S1(S2'-S2)a ≡ D*S2'-D'*S2 (mod p-1)
@@ -150,7 +150,8 @@ can divide by c, solve the resulting equation, then add (up
 to c) multiples of p-1/c until we get our private key,
 verifiable by looking for g^x ≡ A (mod p).
 Unfortunately I don't know how to generalise for when c
-doesn't immediately divide the right-hand side.
+doesn't immediately divide the right-hand side (is it
+even possible? I assume so, but eh)
 
 (c) λ> a_ <$> recovera vk sg1 sg2
 Just 72729
@@ -226,12 +227,11 @@ False
 {-
 
 λ> crackDSA vk
-DSS {dsPar = DSP {dP_ = 103687, dQ_ = 1571, dG_ = 21947}, da_ = 602
+DSS {..., da_ = 602}
 λ> signDSA sk 510 1105
 (439,1259)
 -}
 
--- TODO: use idx calculus or some other sane method
+-- using Shank's babystep-giantstep algo
 crackDSA :: DSAVer -> DSASgn
-crackDSA (DSV sp dA) = DSS sp $ crackDSA sp dA
-  where crackDSA (DSP p q g) dA = head $ filter (\x -> mexp p g x == dA) [1..q-1]
+crackDSA (DSV sp dA) = let DSP p q g = sp in DSS sp $ sbg p q g dA

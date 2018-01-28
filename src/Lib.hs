@@ -6,6 +6,7 @@ module Lib ( inv
            , lnR
            , e
            , crt
+           , sbg
            , isBSmooth
            , isSquare
            , intSqrt
@@ -22,7 +23,8 @@ module Lib ( inv
 
 import Data.Numbers.Primes (primes, isPrime, primeFactors)
 import Data.List.Ordered (mergeAll)
-import Data.List (nub)
+import Data.List (nub, sort)
+import Data.Maybe (fromMaybe)
 
 
 -- multiplicative inverse using EEA
@@ -84,7 +86,7 @@ isSquare :: Integral n => n -> Bool
 isSquare n = let s = intSqrt n in s*s == n
 
 -- take an integer square root. Obviously only works
--- correctly if n = a^2, otherwise there's data loss.
+-- correctly if n = a², otherwise there's data loss.
 intSqrt :: Integral n => n -> n
 intSqrt = truncate . sqrt . fromIntegral
 
@@ -94,7 +96,7 @@ combs :: [a] -> Integer -> [[a]]
 combs cs n = mapM (const cs) [1..n]
 
 -- dumb bruteforce solver of equations modulo N
--- solveEq m n = [t] -> t^2 === m (mod n)
+-- solveEq m n = [t] -> t² ≡ m (mod n)
 solveEq :: Integer -> Integer -> [Integer]
 solveEq m n = solve_aux [1..n]
   where solve_aux [] = []
@@ -142,6 +144,26 @@ checkCarmichael n | even n || isPrime n = False
                   | otherwise           = all fermat fcts
   where fcts = primeFactors n
         fermat p = all (\a -> mexp p a n == a) [0..p-1]
+
+-- Shank's babystep-giantstep algo for cracking DLP
+-- NB: order calculation is inefficient as all hell
+sbg :: Integer -> Integer -> Integer -> Integer -> Integer
+sbg p order g h = i + j*n
+  where n = 1 + flrt order
+        --order = head . filter (\x -> mexp p g x == 1) $ [1..p]
+        lg = sort [(g^k `mod` p, k) | k<-[0..n]]
+        lh = sort [(h * inv (g^(n*k)) p `mod` p, k) | k<-[0..n]]
+        (i,j) = fromMaybe (0,0) $ match lg lh
+
+flrt :: Integer -> Integer  -- flrt x ≈ √x,  with  flrt x² ≤ x < flrt(x+1)²
+flrt x = floor . sqrt . fromInteger $ x
+
+match :: [(Integer, Integer)] -> [(Integer, Integer)] -> Maybe (Integer, Integer)
+match [] _ = Nothing
+match _ [] = Nothing
+match xx@((x,i):xs) yy@((y,j):ys) | x == y = Just (i,j)
+                                  | x > y = match xx ys
+                                  | otherwise = match xs yy
 
 -- Jacobi symbol
 jacobi :: Integer -> Integer -> Integer
