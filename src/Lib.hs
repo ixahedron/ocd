@@ -1,4 +1,5 @@
-module Lib ( inv
+module Lib ( (≡)
+           , inv
            , euc
            , eGCD
            , mexp
@@ -26,6 +27,9 @@ import Data.List.Ordered (mergeAll)
 import Data.List (nub, sort)
 import Data.Maybe (fromMaybe)
 
+infix 5 ≡
+(≡) :: Integer -> Integer -> Integer -> Bool
+a ≡ b = \p -> (a `mod` p) == b
 
 -- multiplicative inverse using EEA
 inv :: (Integral n, Show n) => n -> n -> n 

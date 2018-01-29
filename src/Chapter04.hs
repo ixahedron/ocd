@@ -1,4 +1,4 @@
-import Lib (mexp, inv, sbg)
+import Lib ((≡), mexp, inv, sbg)
 import Data.Numbers.Primes (primeFactors)
 
 -- 4.1
@@ -93,7 +93,7 @@ signEG (EGSgnK (EGS p g) a) d k = let s1 = mexp p g k
 
 verifyEG :: EGVerK -> Integer -> EGSignature -> Bool
 verifyEG (EGVerK (EGS p g) a) d (s1,s2) =
-    ((pexp a s1) * (pexp s1 s2)) `mod` p == pexp g d
+    (pexp a s1) * (pexp s1 s2) ≡ pexp g d $ p
   where pexp = mexp p
 
 -- 4.6
@@ -119,7 +119,7 @@ QED
 
 {-
 
-(a) S1 = g^k (mod p), so S1 will be the same for both documents.
+(a) S1 ≡ g^k (mod p), so S1 will be the same for both documents.
 (b) The answer: a ≡ (S2'-S2)^-1(D*S2'-D'S2)S^-1 (mod p-1)
 
   S2 ≡ (D-aS1)k^-1 <=> a ≡ D*S1^-1 - (S1^-1)*S2*k (mod p-1)
@@ -161,15 +161,15 @@ Just 72729
 recovera :: EGVerK -> (Integer, EGSignature) -> (Integer, EGSignature) -> Maybe EGSgnK
 recovera (EGVerK ss@(EGS p g) dA) (d,(s1,s2)) (d',(s1',s2'))
     | s1 /= s1' = Nothing
-    | gcd s1 (p-1) == 1 && gcd (s2'-s2) (p-1) == 1 = Just (EGSgnK ss $ a)
-    | ds2 `mod` dvsr == 0 = Just (EGSgnK ss $ a_choice)
+    | dvsr == 1 = Just $ EGSgnK ss a
+    | ds2 ≡ 0 $ dvsr = Just $ EGSgnK ss a_choice
     | otherwise = Nothing
-  where a = (inv (s2'-s2) (p-1) * inv s1 (p-1) * ds2) `mod` (p-1)
+  where a = (inv s1s2 (p-1) * ds2) `mod` (p-1)
         a_choice = head $ filter (\x -> mexp p g x == dA) aas
           where aa = (ds2 `div` dvsr)*inv (s1s2 `div` dvsr) ((p-1) `div` dvsr)
                 aas = map (\x -> (aa+x*((p-1) `div` dvsr)) `mod` (p-1)) [0..dvsr-1]
 
-        dvsr = gcd (p-1) $ s1s2
+        dvsr = gcd (p-1) s1s2
         ds2 = d*s2' - d'*s2
         s1s2 = s1*(s2'-s2)
 
@@ -202,7 +202,7 @@ signDSA ss d k = let DSS sp a = ss; DSP p q g = sp;
                  in (s1, s2)
 
 verifyDSA :: DSAVer -> Integer -> EGSignature -> Bool
-verifyDSA vkey d (s1,s2) = ((gv1 * av2) `mod` p) `mod` q == s1
+verifyDSA vkey d (s1,s2) = (gv1 * av2 `mod` p) ≡ s1 $ q
   where v1 =  (d * inv s2 q) `mod` q
         v2 = (s1 * inv s2 q) `mod` q
         gv1 = mexp p g v1
