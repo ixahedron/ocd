@@ -145,11 +145,98 @@ binomialth (M a [(x,e1)]) (M b [(y,e2)]) n | (e1,e2) == (0,0) = [M ((a+b)^n) []]
           | x == y = (M p $ [(x,e1*j+e2*(n-j))]) : bth_aux js
           | otherwise = (M p . filter (\g -> snd g /= 0) $ (x,e1*j):(y,e2*(n-j)):[]) : bth_aux js
             where q = binom n j; p = q*(a^j)*(b^(n-j));
-binomialth _ _ _ = error "Can only use binomial theorem on one-term monomials"
+binomialth _ _ _ = error "I only need binomial theorem on one-term monomials ¯\\_(ツ)_/¯"
 
 -- 5.7
 
 {-
 
+(a)                 = n-j                 = n-(j+1)
+   (n-1)! / (j-1)!(n-1-j+1)! + (n-1)! / j!(n-1-j)! =
+   j(n-1)! / j!(n-j)! + (n-j)(n-1)! / j!(n-j)! =
+   = (n-1)!(j+n-j) / j!(n-j)! = n(n-1)! / j!(n-j)! =
+   = n! / j!(n-j)! = (n j)
+
+(b) (x+y)^n = Σ_j=0..n (n j) x^j y^(n-j)
+  = (x+y) Σ_j=0..n-1 (n-1 j) x^j y^(n-1-j)
+  = Σ_j=0..n-1 (n-1 j) x^(j+1) y^(n-1-j) +
+    Σ_j=0..n-1 (n-1 j) x^j y^(n-j)
+  = Σ_j=1..n (n-1 j-1) x^j y^(n-j) +
+    Σ_j=0..n-1 (n-1 j) x^j y^(n-j)
+  = x^n + Σ_j=1..n-1 (n-1 j-1) x^j y^(n-j) +
+    y^n + Σ_j=1..n-1 (n-1 j) x^j y^(n-j)
+  
+  So it mostly works
+
+(c) It can indeed be decomposed, okay?
+This is boring, maybe I'll come back to it
+
 -}
 
+-- 5.8
+
+{-
+
+(a) (p j) = p! / j!(p-j)!
+j < p => p|p! => p|(p j)
+
+(b) (a+b)^p = Σ_j=0..n (n j) a^j b^(n-j)
+  = a^p + b^p + Σ_j=1..n-1 (n j) a^j b^(n-j)
+And (a) tells us every term in the sum is divisible by p
+
+(c) Base: a = 0
+  0^p ≡ 0 (mod p) ✓
+
+Assumption:
+  a^p ≡ a (mod p)
+
+Step: a -> a+1
+         (b)         Ass.
+  (a+1)^p ≡ a^p + 1^p ≡ a + 1^p ≡ a+1 (mod p) ✓
+
+So it works for every a >= 0
+
+(d) If gcd(p,a)=1, there exists an inverse to a (mod p).
+  a^p * a^-1 = a * a^-1 => a^(p-1) = a^0 = 1 (mod p)
+
+-}
+
+-- 5.9
+
+{-
+
+(a) I lurked in my notes to Ex.1.5 and it seems that such
+permutations are called derangements. The function is below.
+λ> derangements 10
+1334961
+λ> derangements 26
+148362637348470135821287825
+
+(b) 1 or more letters fixed means it's not one of those
+permutations where no letters are fixed.
+λ> let n = 10 in product [1..n] - derangements n
+2293839
+λ> let n = 26 in product [1..n] - derangements n
+254928823778135499762712175
+
+(c) This is trickier. We can imagine that exactly one fixed letter
+means we fix one number and then seek out those permutations where no
+letters are fixed. There are n candidates for that initial fixation,
+so all in all:
+λ> let n = 10 in n * derangements (n-1)
+1334960
+λ> let n = 26 in n * derangements (n-1)
+148362637348470135821287824
+
+(d) Again, proceed as in (b):
+λ> b10-c10
+958879
+λ> b26-c26
+106566186429665363941424351
+
+-}
+
+derangements :: Integer -> Integer
+derangements 0 = 1
+derangements 1 = 0
+derangements n = (n-1) * ((derangements $ n-1) + (derangements $ n-2))
