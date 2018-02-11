@@ -6,6 +6,7 @@ module Lib ( (≡)
            , ln
            , lnR
            , e
+           , binom
            , crt
            , sbg
            , isBSmooth
@@ -81,9 +82,9 @@ e = exp 1
 ln :: Floating a => Integer -> a
 ln = lnR . fromInteger
 
--- b-smooth := has factors <=b only
-isBSmooth :: Integer -> Integer -> Bool
-isBSmooth b x = let xfactors = primeFactors x in all (<= b) xfactors
+-- binomial coefficient (n k)
+binom :: Integer -> Integer -> Integer
+binom n k = product [n-k+1..n] `div` product [1..k]
 
 -- is an integer a perfect square?
 isSquare :: Integral n => n -> Bool
@@ -98,6 +99,10 @@ intSqrt = truncate . sqrt . fromIntegral
 -- combs [0,1] 3 = [[0,0],[0,1],[1,0],[1,1]] e.g.
 combs :: [a] -> Integer -> [[a]]
 combs cs n = mapM (const cs) [1..n]
+
+-- b-smooth := has factors <=b only
+isBSmooth :: Integer -> Integer -> Bool
+isBSmooth b x = let xfactors = primeFactors x in all (<= b) xfactors
 
 -- dumb bruteforce solver of equations modulo N
 -- solveEq m n = [t] -> t² ≡ m (mod n)
