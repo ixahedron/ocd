@@ -17,6 +17,9 @@ library
 --  ghc-options:         -Wall
   default-extensions:   TupleSections
                         ViewPatterns
+                        RecordWildCards
                         LambdaCase
                         MultiWayIf
                         BangPatterns
+                        UnicodeSyntax
+                        MagicHash

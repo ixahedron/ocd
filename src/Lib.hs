@@ -45,6 +45,7 @@ euc a b | a `mod` b == 0 = (0,1)
         | otherwise = (y,x-y*(a `div` b))
   where (x,y) = euc b $ a `mod` b
 
+-- same as euc but returning (x,y,gcd a b)
 eGCD :: Integral n => n -> n -> (n,n,n)
 eGCD a b | mod a b == 0 = (0,1,b)
          | otherwise = (y,x-y*(a `div` b),z)
