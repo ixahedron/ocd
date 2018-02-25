@@ -259,8 +259,7 @@ By definition of equivocation:
    =          1         * H(X)
    = H(X)
 
-(b) Nope, just as f(x|y) = f(x)f(y) does not imply X and Y are independent.
-Maybe find an example later
+(b) Yes, don't have the proof 
 
 -}
 
@@ -276,27 +275,27 @@ since we can't assume perfect secrecy. But it'll have to do.
 
 So H(X,Y) = H(Y) + H(X|Y), analogous to normal probabilities.
 
-Let's combine K and M into some new fucking variable, say Z, and get the following
+Let's combine K and M into a new virtual random variable, and get the following
 expansion:
 
-  H(C,Z) = H(Z) + H(C|Z)
+  H(C,K,M) = H(K,M) + H(C|K,M)
 
-Now notice what the second factor on the right-hand side says: basically H(C|Z)
+Now notice what the second factor on the right-hand side says: basically H(C|K,M)
 is the amount of uncertainty in which ciphertext we'll get if we condition on
 a key and on a plaintext.
 Well, it's zero. The c is uniquely determined in this case. So:
-                         *
-  H(C,Z) = H(Z) = H(K,M) = H(K) + H(M)
+                    *
+  H(C,K,M) = H(K,M) = H(K) + H(M)
 
-Now let's define yet another new random variable W := K,C and compute
+Now let's do the same for K,C and compute
 
-  H(M,W) = H(W) + H(M|W)
+  H(M,K,C) = H(K,C) + H(M|K,C)
 
 The second factor on the right-hand side now describes the amount of uncertainty
 for the plaintext for given key and ciphertext, which is again 0. So:
 
-  H(M,W) = H(W) = H(K,C) <-- we can't expand here as we did with Z,
-                             K might be not independent from C :(
+  H(M,K,C) = H(K,C) <-- we can't expand here as we did with K,M,
+                        K might be not independent from C :(
 
 
 With this, compute while handwaving ferociously (won't work otherwise):
