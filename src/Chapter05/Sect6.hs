@@ -9,7 +9,7 @@ I would skip it but it's also needed for another task down below, so THERE.
 :/
 
 (a) λ> map fC [1..4]
-[0.3333333333333333,0.3333333333333333,0.2222222222222222,0.1111111111111111]
+[0.3333333333333333,0.26666666666666666,0.26666666666666666,0.13333333333333333]
 
 (b) λ> map (fCIM 1) [1..3]
 [0.3333333333333333,0.3333333333333333,0.3333333333333333]
@@ -47,7 +47,7 @@ fK k | k > 3 = error "out of key sample space"
      | otherwise = 1/3
 
 fC :: Cipher -> Double
-fC c = let cts = M.elems kmc545 in (length . filter (== c) $ cts) /// length cts
+fC c = sum . map (\m -> fM m * fCIM c m) $ [1..3]
 
 (///) :: Integral n => n -> n -> Double
 a /// b = (fromIntegral a) / (fromIntegral b)
@@ -313,11 +313,11 @@ H(K) = λ> h fK [1..3]
 H(M) = λ> h fM [1..3]
 1.5219280948873621
 H(C) = λ> h fC [1..4]
-1.8910611120726526
+1.9329145639793979
 
 H(K|C) = H(K) + H(M) - H(C) per Ex.5.57, so:
 λ> h fK [1..3] + h fM [1..3] - h fC [1..4]
-1.2158294835358654
+1.1739760316291201
 
 -}
 
