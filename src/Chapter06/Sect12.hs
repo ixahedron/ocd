@@ -202,7 +202,6 @@ instance AdditiveGroup ELPF where
     | otherwise = let λ = if (x1,y1) == (x2,y2) then (3*x1*x1+a) * inv (2*y1) p
                                                 else (y2-y1) * inv (x2-x1) p;
                       x3 = (λ^2-x1-x2) `mod` p; y3 = (λ*(x1-x3)-y1) `mod` p;
-                  q
                   in ELPF ElCurveF{..} (x3,y3)
 
 
