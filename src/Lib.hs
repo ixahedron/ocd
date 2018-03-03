@@ -30,7 +30,7 @@ import Data.Maybe (fromMaybe)
 
 infix 5 ≡
 (≡) :: Integer -> Integer -> Integer -> Bool
-a ≡ b = \p -> (a `mod` p) == b
+a ≡ b = \p -> (a `mod` p) == (b `mod` p)
 
 -- multiplicative inverse using EEA
 inv :: (Integral n, Show n) => n -> n -> n 
@@ -183,7 +183,8 @@ jacobi (-1) b | b `mod` 4 == 1 = 1
 jacobi   2  b | (b `mod` 8) `elem` [1,7] = 1
               | (b `mod` 8) `elem` [3,5] = -1
               | otherwise = error "even b"
-jacobi   a  b | a `mod` b == b-1 = jacobi (-1) b
+jacobi   a  b | a `mod` b == 0 = 0
+              | a `mod` b == b-1 = jacobi (-1) b
               | a `mod` b == 2   = jacobi 2 b
               | even a = let (k,p) = reduceToOdd a;
                              q = if even k then 1 else jacobi 2 b
