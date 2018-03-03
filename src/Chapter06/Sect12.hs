@@ -4,8 +4,6 @@ import Lib ((≡), jacobi, inv)
 
 {-
 
-λ> pt +^ pt
-ELPR {curve = ElCurveR {a = -2, b = 4}, q = (0.25,-1.875)}
 λ> pt +^ qt
 ELPR {curve = ElCurveR {a = -2, b = 4}, q = (2.4444444444444455,3.703703703703707)}
 λ> pt +^ pt
@@ -196,7 +194,9 @@ instance AdditiveGroup ELPF where
 
   O +^ p2 = p2
   p1 +^ O = p1
-  p1 +^ p2 | p1 == negateP p2 = O
+  p1 +^ p2 | (not . onCurve $ p1) || (not . onCurve $ p2) = error "points not on the curve"
+           | p1 == negateP p2 = O
+           | negateP p1 == p2 = O
   (ELPF c1 (x1,y1)) +^ (ELPF c2@ElCurveF{..} (x2,y2))
     | c1 /= c2 = error "not the same curve"
     | otherwise = let λ = if (x1,y1) == (x2,y2) then (3*x1*x1+a) * inv (2*y1) p
