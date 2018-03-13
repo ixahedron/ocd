@@ -1,6 +1,7 @@
 import EllipticCurve hiding (dadd)
 import Lib (eGCD)
 import Data.List (find, group)
+import Data.Maybe (fromMaybe)
 
 -- 6.8
 
@@ -109,12 +110,16 @@ ternExpansion = concat . replaceRun . shift . group . binExpansion
         replaceRun (zs@(0:_):xs) = zs:(replaceRun xs)
         replaceRun ([1,0]:xs) = [1,0]:(replaceRun xs)
         replaceRun (run@(1:_):xs) = let rp = (-1):(replicate ((length run)-2) 0)++[1] in rp:(replaceRun xs)
-                
+
         shift [] = []
         shift zs@((0:_):[]) = zs
         shift (zs@(0:_):xs) = zs:shift xs
         shift (ones@(1:_):[0]:[]) = (ones++[0]):[]
         shift (ones@(1:_):(0:zs):xs) = (ones++[0]):zs:(shift xs)
+
+-- multiply out the ternary expansion into the hopefully original integer
+--testTern :: [Integer] -> Integer
+--testTern ns = foldl (\)
 
 compareExps n = let bin = length $ filter (/= 0) (binExpansion n);
                     tern = length $ filter (/= 0) (ternExpansion n)
@@ -155,9 +160,8 @@ data PollardExps = PExp {α :: Integer, β :: Integer, γ :: Integer, δ :: Inte
   deriving (Show)
 
 ecdlpOnRhoMatch :: ELPF -> ELPF -> Integer -> PollardExps -> Maybe Integer
-ecdlpOnRhoMatch q1@ELPF{..} q2 n PExp{..}= find (\l -> l *^ q1 == q2) lhs
-  where norm x = if x < 0 then x+n else x
-        a = norm $ α-γ; b = norm $ δ-β;
+ecdlpOnRhoMatch q1@ELPF{..} q2 n PExp{..} = find (\l -> l *^ q1 == q2) lhs
+  where a = (α-γ) `mod` n; b = (δ-β) `mod` n;
         (s,_,d) = eGCD b n; w = ((a * s) `mod` n) `div` d
         lhs = [w + k*(n `div` d) | k<-[0..d-1]]
 
@@ -169,9 +173,9 @@ ecdlpPollardRho q1 q2 = let (y,γ,δ) = fRho (q1,1,0);
         rhoxps x y PExp{..} = let (x',α',β') = fRho (x,α,β);
                                   (y',γ',δ') = fRho . fRho $ (y,γ,δ)
                               in rhoxps x' y' $ PExp α' β' γ' δ'
-                              
+
         n = curveSize . curve_ $ q1
-        
+
         fRho :: (ELPF, Integer, Integer) -> (ELPF, Integer, Integer)
         fRho (q,α,β) | p'/3 > x' && x' >= 0 = (q +^ q1, (α+1) `mod` n, β)
                      | 2*p'/3 > x' && x' >= p'/3 = (2 *^ q, (2*α) `mod` n, (2*β) `mod` n)

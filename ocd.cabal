@@ -9,7 +9,7 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Lib
-  build-depends:       base >=4.9 && <4.10
+  build-depends:       base >=4.9 && <4.11
                      , primes >=0.2
                      , data-ordlist >=0.4.7
                      , containers >= 0.5.7
