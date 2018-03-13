@@ -1,7 +1,6 @@
-import EllipticCurve hiding (dadd)
+import Lib.EllipticCurve hiding (dadd)
 import Lib (eGCD)
 import Data.List (find, group)
-import Data.Maybe (fromMaybe)
 
 -- 6.8
 
@@ -117,9 +116,11 @@ ternExpansion = concat . replaceRun . shift . group . binExpansion
         shift (ones@(1:_):[0]:[]) = (ones++[0]):[]
         shift (ones@(1:_):(0:zs):xs) = (ones++[0]):zs:(shift xs)
 
--- multiply out the ternary expansion into the hopefully original integer
---testTern :: [Integer] -> Integer
---testTern ns = foldl (\)
+-- multiply out the ternary expansion into hopefully the original integer
+testTern :: [Integer] -> Integer
+testTern ns = aux ns 0 0
+  where aux [] _ s = s
+        aux (n:ns) k s = aux ns (k+1) $ s + (n * 2^k)
 
 compareExps n = let bin = length $ filter (/= 0) (binExpansion n);
                     tern = length $ filter (/= 0) (ternExpansion n)

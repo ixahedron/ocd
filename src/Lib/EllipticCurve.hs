@@ -1,4 +1,4 @@
-module EllipticCurve where
+module Lib.EllipticCurve where
 
 import Lib (inv, jacobi, (≡))
 
@@ -55,7 +55,7 @@ dadd p n = dadd_aux n p O
 
 onCurve :: ELPF -> Bool
 onCurve O = True
-onCurve (ELPF ElCurveF{..} (x,y)) = y^2 ≡ (x^3 + a_*x + b_) $ p_ 
+onCurve (ELPF ElCurveF{..} (x,y)) = y^2 ≡ (x^3 + a_*x + b_) $ p_
 
 showReadable :: ELPF -> String
 showReadable ELPF{..} = "EP " ++ show q_
