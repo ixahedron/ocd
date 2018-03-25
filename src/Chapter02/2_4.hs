@@ -5,7 +5,7 @@ import Data.List
 {-
 *Main> pub_2_8 947
 177
-*Main> encrypt_2_8b 
+*Main> encrypt_2_8b
 (719,618)
 *Main> decrypt_2_8c
 332
@@ -62,7 +62,7 @@ an inverse for A^k and get m by computing
 {-
 
 (a) First of all, notice m = m^(abcd), with c = 15619, d = 31883. So it must be that
-  
+
   abcd === 1 mod p-1,
 
 Considering that both parties choose their exponents without consulting each other,
@@ -85,7 +85,12 @@ Indeed,
 
 (b) already done half-heartedly in (a) ¯\_(ツ)_/¯
 
-(c), (d) fuck-all :(
+(c) fuck-all :(
+
+(d) DLP: Yeah, obvs, since she can take u and v and solve the DLP for them:
+v = u^b `mod` p. p is public knowledge, so she discovers b, can easily take an
+inverse of that and uncover the message m from w = v^(a^-1) = m^ab(a^-1) = m^b.
+DHP: I'm lazy, eh. But intuitively I don't think so.
 
 -}
 
@@ -117,7 +122,7 @@ Hence, g^-1 is in G[d].
 
 (b) g1^d * g2^d = e * e = e, but also, by expanding the powering,
 it holds that             d times            d times    comm.
-  g1^d * g2^d = g1 * g1 * ... * g1 * g2 * g2 * ... * g2   = 
+  g1^d * g2^d = g1 * g1 * ... * g1 * g2 * g2 * ... * g2   =
                     d times
   g1 * g2 * g1 * g2 * ... * g1 * g2 = (g1 * g2)^d = e,
 
@@ -127,7 +132,7 @@ so the product of g1 and g2 is in G[d]
 Subgroup itself is a group. QED
 
 (d) Let d = 2 and G = S3 from 2.11. Then,
-     2.11c   
+     2.11c
   στ² = e and τ² = e, but
          2.11b
   (τστ)²  =  (σ²)² = σ³σ = σ ≠ e

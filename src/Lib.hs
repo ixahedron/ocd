@@ -15,7 +15,7 @@ module Lib ( (≡)
            , combs
            , solveEq
            , millerRabinTest
-           , checkCarmichael 
+           , checkCarmichael
            , reduceToOdd
            , reduceToPrime
            , primePowers
@@ -33,7 +33,7 @@ infix 5 ≡
 a ≡ b = \p -> (a `mod` p) == (b `mod` p)
 
 -- multiplicative inverse using EEA
-inv :: (Integral n, Show n) => n -> n -> n 
+inv :: (Integral n, Show n) => n -> n -> n
 inv a p = if gcd a p == 1
           then norm . fst $ euc a p
           else error $ show p ++ " can't compute inverse if gcd =/= 1 " ++ show a
@@ -96,6 +96,13 @@ isSquare n = let s = intSqrt n in s*s == n
 intSqrt :: Integral n => n -> n
 intSqrt = truncate . sqrt . fromIntegral
 
+-- take a square root in a finite field
+-- TODO fckin everything, this is problematic
+sqrtFin :: Integer -> Integer -> Integer
+sqrtFin p a | p ≡ 3 $ 4 = mexp p a' ((p+1) `div` 4)
+            | otherwise = head $ [b | b<-[1..p-1], mexp p b 2 == a'] -- yeah yeah, unsafe, inefficient
+  where a' = a `mod` p
+
 -- all vectors of length n with elems taken from a given charset
 -- combs [0,1] 3 = [[0,0],[0,1],[1,0],[1,1]] e.g.
 combs :: [a] -> Integer -> [[a]]
@@ -117,7 +124,7 @@ solveEq m n = solve_aux [1..n]
 -- s is how many potential witnesses to check
 millerRabinTest :: Int -> Integer -> Either Integer [Integer]
 millerRabinTest s n | n > 2 && even n = Left (-2)
-                    | any (\a -> gcd a n > 1) as = Left (-1) 
+                    | any (\a -> gcd a n > 1) as = Left (-1)
                     | otherwise       = mrt_aux 0 $ map (\a -> mexp n a q) as
   where as = take s primes
         (k,q) = reduceToOdd $ n-1
