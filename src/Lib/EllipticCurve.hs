@@ -1,4 +1,12 @@
-module Lib.EllipticCurve where
+module Lib.EllipticCurve (ElCurveF(..)
+                        , ELPF(..)
+                        , AdditiveGroup(..)
+                        , onCurve
+                        , showReadable
+                        , curveSize
+                        , listPoints
+                        , listPointsReadable
+                        ) where
 
 import Lib (inv, jacobi, (≡))
 
