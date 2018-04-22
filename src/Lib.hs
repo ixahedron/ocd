@@ -19,6 +19,7 @@ module Lib ( (≡)
            , reduceToOdd
            , reduceToPrime
            , primePowers
+           , binExpansion
            , jacobi
            ) where
 
@@ -152,6 +153,11 @@ reduceToPrime n | isPrime n = n
 -- [2,3,4,5,7,8,9,11,...]
 primePowers :: [Integer]
 primePowers = mergeAll [[p^i | i <- [1..]] | p <- primes]
+
+-- compute coefficients for the binary expansion of an integer
+binExpansion :: Integer -> [Integer]
+binExpansion 0 = [0]
+binExpansion n = (n `mod` 2) : (binExpansion $ n `div` 2)
 
 -- checks (using primeFactors, might be slow?) whether
 -- a given number is Carmichael

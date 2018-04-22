@@ -69,7 +69,7 @@ instance Num PolyF where
 
   -- here I take the second set of params as a h4ck: in case of multiplication by a scalar
   -- the first set is undefined. But it's a shitty solution. How to make a better one?
-  (PolyF p q a) * (PolyF p' q' b) = overF normalize . asToFieldF . PolyF p' q' $ (a * b) `pmod` q'
+  (PolyF _ _ a) * (PolyF p' q' b) = overF normalize . asToFieldF . PolyF p' q' $ (a * b) `pmod` q'
   abs (PolyF p q a) = asToFieldF $ PolyF p q (abs a)
   signum (PolyF p q a) = asToFieldF $ PolyF p q (signum a)
 

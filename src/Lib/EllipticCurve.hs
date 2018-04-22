@@ -1,6 +1,7 @@
 module Lib.EllipticCurve (ElCurveF(..)
                         , ELPF(..)
                         , AdditiveGroup(..)
+                        , lambdaSlope
                         , onCurve
                         , showReadable
                         , curveSize
@@ -45,14 +46,24 @@ instance AdditiveGroup ELPF where
   O +^ p2 = p2
   p1 +^ O = p1
   p1 +^ p2 | (not . onCurve $ p1) || (not . onCurve $ p2) = error "points not on the curve"
-           | p1 == negateP p2 = O
-           | negateP p1 == p2 = O
-  (ELPF c1 (x1,y1)) +^ (ELPF c2@ElCurveF{..} (x2,y2))
+  p1@(ELPF c1 (x1,y1)) +^ p2@(ELPF c2@ElCurveF{..} (x2,y2))
     | c1 /= c2 = error "not the same curve"
-    | otherwise = let λ = if (x1,y1) == (x2,y2) then (3*x1*x1+a_) * inv (2*y1) p_
-                                                else (y2-y1) * inv (x2-x1) p_;
-                      x3 = (λ^2-x1-x2) `mod` p_; y3 = (λ*(x1-x3)-y1) `mod` p_;
-                  in ELPF ElCurveF{..} (x3,y3)
+    | otherwise = case lambdaSlope p1 p2 of
+                    Nothing -> O
+                    Just λ -> let x3 = (λ^2-x1-x2) `mod` p_;
+                                  y3 = (λ*(x1-x3)-y1) `mod` p_
+                              in ELPF ElCurveF{..} (x3,y3)
+
+normalize :: ELPF -> ELPF
+normalize (ELPF ec (x,y)) = let p = p_ ec in ELPF ec (x `mod` p, y `mod` p)
+
+lambdaSlope :: ELPF -> ELPF -> Maybe Integer
+lambdaSlope O p = Nothing
+lambdaSlope p O = Nothing
+lambdaSlope p1@(ELPF c1 (x1,y1)) p2@(ELPF c2@ElCurveF{..} (x2,y2))
+  | p1 == negateP p2 = Nothing
+  | otherwise = Just $ if (x1,y1) == (x2,y2) then ((3*x1*x1+a_) * inv (2*y1) p_ ) `mod` p_
+                                      else ((y2-y1) * inv (x2-x1) p_) `mod` p_
 
 -- Double-and-add algo for elliptic curves
 dadd :: Integral a => ELPF -> a -> ELPF
