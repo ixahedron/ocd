@@ -1,20 +1,29 @@
 module Lib.EllipticCurve (ElCurveF(..)
-                        , ELPF(..)
+                        , ELP(..)
+                        , ELPF
+                        , ELPP
                         , AdditiveGroup(..)
                         , lambdaSlope
                         , onCurve
+                        , millerWeil
+                        , millerAlgo
+                        , millerG
                         , showReadable
                         , curveSize
                         , listPoints
                         , listPointsReadable
                         ) where
 
-import Lib (inv, jacobi, (≡))
+import Lib.Field
+import Lib (jacobi, binExpansion)
+import Control.Applicative (liftA2)
 
 data ElCurveF = ElCurveF {a_ :: Integer, b_ :: Integer, p_ :: Integer}
   deriving (Show, Eq)
 
-data ELPF = O | ELPF {curve_ :: ElCurveF, q_ :: (Integer, Integer)}
+type ELPF = ELP Integer
+type ELPP = ELP Fp2Elem
+data ELP a = O | ELPF {curve_ :: ElCurveF, q_ :: (a,a)}
   deriving (Show, Eq)
 
 class AdditiveGroup p where
@@ -33,53 +42,90 @@ class AdditiveGroup p where
   (^*) :: (Integral a) => p -> a -> p
   p ^* k = k *^ p
 
-instance AdditiveGroup ELPF where
+instance Fieldish a => AdditiveGroup (ELP a) where
   zero = O
   negateP O = O
-  negateP (ELPF c@ElCurveF{..} (x,y)) = ELPF c (x,p_-y)
+  negateP (ELPF c (x,y)) = ELPF c (x,-y)
 
   (*^) _ O = O
-  (*^) 0 p = O
+  (*^) 0 _ = O
   (*^) 1 p = p
   (*^) k p = dadd p k
 
   O +^ p2 = p2
   p1 +^ O = p1
   p1 +^ p2 | (not . onCurve $ p1) || (not . onCurve $ p2) = error "points not on the curve"
-  p1@(ELPF c1 (x1,y1)) +^ p2@(ELPF c2@ElCurveF{..} (x2,y2))
+  p1@(ELPF c1 (x1,y1)) +^ p2@(ELPF c2@ElCurveF{..} (x2,_))
     | c1 /= c2 = error "not the same curve"
     | otherwise = case lambdaSlope p1 p2 of
                     Nothing -> O
-                    Just λ -> let x3 = (λ^2-x1-x2) `mod` p_;
-                                  y3 = (λ*(x1-x3)-y1) `mod` p_
+                    Just λ -> let x3 = (λ*λ-x1-x2) `pmod` (fromInteger p_);
+                                  y3 = (λ*(x1-x3)-y1) `pmod` (fromInteger p_)
                               in ELPF ElCurveF{..} (x3,y3)
 
-normalize :: ELPF -> ELPF
-normalize (ELPF ec (x,y)) = let p = p_ ec in ELPF ec (x `mod` p, y `mod` p)
-
-lambdaSlope :: ELPF -> ELPF -> Maybe Integer
-lambdaSlope O p = Nothing
-lambdaSlope p O = Nothing
-lambdaSlope p1@(ELPF c1 (x1,y1)) p2@(ELPF c2@ElCurveF{..} (x2,y2))
+lambdaSlope :: Fieldish a => ELP a -> ELP a -> Maybe a
+lambdaSlope O _ = Nothing
+lambdaSlope _ O = Nothing
+lambdaSlope p1@(ELPF _ (x1,y1)) p2@(ELPF ElCurveF{..} (x2,y2))
   | p1 == negateP p2 = Nothing
-  | otherwise = Just $ if (x1,y1) == (x2,y2) then ((3*x1*x1+a_) * inv (2*y1) p_ ) `mod` p_
-                                      else ((y2-y1) * inv (x2-x1) p_) `mod` p_
+  | otherwise = Just $ if (x1,y1) == (x2,y2) then ((3*x1*x1+(fromInteger a_)) * pinv (2*y1) p_ ) `pmod` p'
+                                      else ((y2-y1) * pinv (x2-x1) p_) `pmod` p'
+    where p' = fromInteger p_
 
 -- Double-and-add algo for elliptic curves
-dadd :: Integral a => ELPF -> a -> ELPF
-dadd p n = dadd_aux n p O
+dadd :: (Fieldish a, Integral n) => ELP a -> n -> ELP a
+dadd p n0 = dadd_aux n0 p O
   where dadd_aux 0 _ r = r
         dadd_aux n q r | odd n = dadd_aux (n `div` 2) (q +^ q) (r +^ q)
                        | otherwise = dadd_aux (n `div` 2) (q +^ q) r
 
-onCurve :: ELPF -> Bool
+onCurve :: Fieldish a => ELP a -> Bool
 onCurve O = True
-onCurve (ELPF ElCurveF{..} (x,y)) = y^2 ≡ (x^3 + a_*x + b_) $ p_
+onCurve (ELPF ElCurveF{..} (x,y)) = y*y ≡ (x*x*x + a'*x + b') $ p_
+  where a' = fromInteger a_
+        b' = fromInteger b_
 
-showReadable :: ELPF -> String
+millerWeil :: (Fieldish a, Integral n) => ELP a -> ELP a -> ELP a -> n -> a
+millerWeil p q s m = (((f_P (q+^s) * pinv (f_P s) p') `pmod` p') *
+                                (pinv ((f_Q (p -^ s)) * pinv (f_Q (negateP s)) p') p')) `pmod` p'
+  where f_P = millerAlgo m p
+        f_Q = millerAlgo m q
+        p' = p_ . curve_ $ p
+
+millerG :: Fieldish a => ELP a -> ELP a -> (ELP a -> a)
+millerG p q O = error "points should be non-zero"
+millerG p q s = case lambdaSlope p q of
+                  Nothing -> (x - xP) `pmod` p'
+                  Just λ  -> ((y - yP - λ*(x - xP)) * pinv (x + xP + xQ - λ*λ) p') `pmod` p'
+  where (x,y) = q_ s; (xP,yP) = q_ p; (xQ,yQ) = q_ q
+        p' = p_ . curve_ $ q
+
+
+millerAlgo :: (Fieldish a, Integral n) => n -> ELP a -> (ELP a -> a)
+millerAlgo m p = miller_aux p 1 mbin
+  where miller_aux t f [] = let p' = p_ . curve_ $ p in (`pmod` p') . f
+        miller_aux t f (0:bin) = miller_aux (2*^t)     (f^2*(millerG t t)) bin
+        miller_aux t f (1:bin) = miller_aux (2*^t+^p) ((f^2*(millerG t t))*millerG (2*^t) p) bin
+
+        _:_:mbin = reverse . binExpansion $ m
+
+instance Num b => Num (a -> b) where
+      negate      = fmap negate
+      (+)         = liftA2 (+)
+      (*)         = liftA2 (*)
+      fromInteger = pure . fromInteger
+      abs         = fmap abs
+      signum      = fmap signum
+
+normalize :: Fieldish a => ELP a -> ELP a
+normalize O = O
+normalize (ELPF ec (x,y)) = let p = fromInteger . p_ $ ec in ELPF ec (x `pmod` p, y `pmod` p)
+
+showReadable :: Show a => ELP a -> String
+showReadable O        = "EP O"
 showReadable ELPF{..} = "EP " ++ show q_
 
-curveSize :: Integral a => ElCurveF -> a
+curveSize :: Integral n => ElCurveF -> n
 curveSize = fromIntegral . length . listPoints
 
 listPoints :: ElCurveF -> [ELPF]

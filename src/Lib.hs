@@ -1,8 +1,9 @@
-module Lib ( (≡)
-           , inv
+module Lib (
+             inv
+           , (≡)
+           , mexp
            , euc
            , eGCD
-           , mexp
            , ln
            , lnR
            , e
@@ -28,43 +29,8 @@ import Data.Numbers.Primes (primes, isPrime, primeFactors)
 import Data.List.Ordered (mergeAll)
 import Data.List (nub, sort)
 import Data.Maybe (fromMaybe)
+import Lib.Field
 
-infix 5 ≡
-(≡) :: Integer -> Integer -> Integer -> Bool
-a ≡ b = \p -> (a `mod` p) == (b `mod` p)
-
--- multiplicative inverse using EEA
-inv :: (Integral n, Show n) => n -> n -> n
-inv a p = if gcd a p == 1
-          then norm . fst $ euc a p
-          else error $ show p ++ " can't compute inverse if gcd =/= 1 " ++ show a
-  where norm x = if x >= 0 then x else x+p
-
--- euc a b = (x,y) => ax + by = gcd a b
-euc :: Integral n => n -> n -> (n,n)
-euc a b | a `mod` b == 0 = (0,1)
-        | otherwise = (y,x-y*(a `div` b))
-  where (x,y) = euc b $ a `mod` b
-
--- same as euc but returning (x,y,gcd a b)
-eGCD :: Integral n => n -> n -> (n,n,n)
-eGCD a b | mod a b == 0 = (0,1,b)
-         | otherwise = (y,x-y*(a `div` b),z)
-        where
-          (x,y,z) = eGCD b $ a `mod` b
-
-
--- modular (fast) exponentiation using binary method
--- mexp m a e = a^e (mod m)
-mexp :: (Show n, Integral n) => n -> n -> n -> n
-mexp 1 _ _ = 0
-mexp m x y = raise x y
-  where raise 0 _ = 0
-        raise _ 0 = 1
-        raise a 1 = a `mod` m
-        raise a e | e < 0     = raise (inv a m) (-e)
-                  | otherwise = let t = if e `mod` 2 == 1 then a `mod` m else 1
-                    in t * (raise (a^2 `mod` m) (e `div` 2)) `mod` m
 
 -- chinese remainder theorem
 crt :: [Integer] -> [Integer] -> Integer
@@ -97,13 +63,6 @@ isSquare n = let s = intSqrt n in s*s == n
 intSqrt :: Integral n => n -> n
 intSqrt = truncate . sqrt . fromIntegral
 
--- take a square root in a finite field
--- TODO fckin everything, this is problematic
-sqrtFin :: Integer -> Integer -> Integer
-sqrtFin p a | p ≡ 3 $ 4 = mexp p a' ((p+1) `div` 4)
-            | otherwise = head $ [b | b<-[1..p-1], mexp p b 2 == a'] -- yeah yeah, unsafe, inefficient
-  where a' = a `mod` p
-
 -- all vectors of length n with elems taken from a given charset
 -- combs [0,1] 3 = [[0,0],[0,1],[1,0],[1,1]] e.g.
 combs :: [a] -> Integer -> [[a]]
@@ -120,6 +79,13 @@ solveEq m n = solve_aux [1..n]
   where solve_aux [] = []
         solve_aux (t:ts) | mexp n t 2 == m `mod` n = t : solve_aux ts
                          | otherwise = solve_aux ts
+
+-- take a square root in a finite field
+-- TODO fckin everything, this is problematic
+sqrtFin :: Integer -> Integer -> Integer
+sqrtFin p a | p ≡ 3 $ 4 = mexp p a' ((p+1) `div` 4)
+            | otherwise = head $ [b | b<-[1..p-1], mexp p b 2 == a'] -- yeah yeah, unsafe, inefficient
+  where a' = a `mod` p
 
 -- Left means composite with a witness, Right - probably prime
 -- s is how many potential witnesses to check
@@ -155,7 +121,7 @@ primePowers :: [Integer]
 primePowers = mergeAll [[p^i | i <- [1..]] | p <- primes]
 
 -- compute coefficients for the binary expansion of an integer
-binExpansion :: Integer -> [Integer]
+binExpansion :: Integral n => n -> [n]
 binExpansion 0 = [0]
 binExpansion n = (n `mod` 2) : (binExpansion $ n `div` 2)
 

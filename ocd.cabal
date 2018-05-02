@@ -27,3 +27,5 @@ library
                         MagicHash
                         DuplicateRecordFields
                         FlexibleInstances
+                        FlexibleContexts
+                        UndecidableInstances
