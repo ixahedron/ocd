@@ -12,10 +12,12 @@ module Lib.EllipticCurve (ElCurveF(..)
                         , curveSize
                         , listPoints
                         , listPointsReadable
+                        , listPointsFp2
+                        , listPointsReadableFp2
                         ) where
 
 import Lib.Field
-import Lib (jacobi, binExpansion)
+import Lib (jacobi, binExpansion, sqrtFins)
 import Control.Applicative (liftA2)
 
 data ElCurveF = ElCurveF {a_ :: Integer, b_ :: Integer, p_ :: Integer}
@@ -45,7 +47,9 @@ class AdditiveGroup p where
 instance Fieldish a => AdditiveGroup (ELP a) where
   zero = O
   negateP O = O
-  negateP (ELPF c (x,y)) = ELPF c (x,-y)
+  negateP (ELPF c (x,y)) = ELPF c $ norm (x,-y)
+    where p' = p_ c
+          norm (x,y) = (x `pmod` p', y `pmod` p')
 
   (*^) _ O = O
   (*^) 0 _ = O
@@ -103,7 +107,7 @@ millerG p q s = case lambdaSlope p q of
 
 millerAlgo :: (Fieldish a, Integral n) => n -> ELP a -> (ELP a -> a)
 millerAlgo m p = miller_aux p 1 mbin
-  where miller_aux t f [] = let p' = p_ . curve_ $ p in (`pmod` p') . f
+  where miller_aux t f      [] = let p' = p_ . curve_ $ p in (`pmod` p') . f
         miller_aux t f (0:bin) = miller_aux (2*^t)     (f^2*(millerG t t)) bin
         miller_aux t f (1:bin) = miller_aux (2*^t+^p) ((f^2*(millerG t t))*millerG (2*^t) p) bin
 
@@ -131,7 +135,16 @@ curveSize = fromIntegral . length . listPoints
 listPoints :: ElCurveF -> [ELPF]
 listPoints e = O:(map (ELPF e) $ listPointsReadable e)
 
-listPointsReadable :: ElCurveF -> [(Integer,Integer)]
+listPointsFp2 :: ElCurveF -> [ELPP]
+listPointsFp2 e = O:(map (ELPF e) $ listPointsReadableFp2 e)
+
+listPointsReadable :: ElCurveF -> [(Integer, Integer)]
 listPointsReadable e@ElCurveF{..} = concat . map points $ [0..p_-1]
-  where points x | jacobi (x^3 + a_*x + b_) p_ == -1 = []
-                 | otherwise = [(x,y) | y<-[0..p_-1], onCurve $ ELPF e (x,y)]
+  where points x | jacobi (y2 x) p_ == -1 = []
+                 | otherwise = [(x,y) | y<-sqrtFins p_ (y2 x)]
+
+        y2 x = x^3 + a_*x + b_
+
+listPointsReadableFp2 :: ElCurveF -> [(Fp2Elem, Fp2Elem)]
+listPointsReadableFp2 e@ElCurveF{..} = concat . map points $ [(i,j) | i<-[0..p_-1], j<-[0..p_-1]]
+  where points x = [(x,y) | y<-[(i,j) | i<-[0..p_-1], j<-[0..p_-1]], onCurve $ ELPF e (x,y)]

@@ -8,7 +8,7 @@ instance Num Fp2Elem where
   (x,i)*(w,j)  = (x*w-i*j,x*j+w*i)
   fromInteger  = (,0)
   abs (x,i)    = (abs x, abs i) -- this is probably wrong, fix?
-  signum       = \(x,i) -> (signum x, signum i)
+  signum (x,i) = (signum x, signum i)
 
 class (Eq p, Num p) => Moddable p where
   pmod :: Integral n => p -> n -> p

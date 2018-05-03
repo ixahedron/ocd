@@ -13,6 +13,8 @@ module Lib (
            , isBSmooth
            , isSquare
            , intSqrt
+           , sqrtFins
+           , sqrtFin
            , combs
            , solveEq
            , millerRabinTest
@@ -82,10 +84,12 @@ solveEq m n = solve_aux [1..n]
 
 -- take a square root in a finite field
 -- TODO fckin everything, this is problematic
+sqrtFins :: Integer -> Integer -> [Integer]
+sqrtFins p a = [b | b<-[1..p-1], mexp p b 2 ≡ a $ p] -- yeah yeah, unsafe, inefficient
+
 sqrtFin :: Integer -> Integer -> Integer
-sqrtFin p a | p ≡ 3 $ 4 = mexp p a' ((p+1) `div` 4)
-            | otherwise = head $ [b | b<-[1..p-1], mexp p b 2 == a'] -- yeah yeah, unsafe, inefficient
-  where a' = a `mod` p
+sqrtFin p a | p ≡ 3 $ 4 = mexp p (a `mod` p) ((p+1) `div` 4)
+            | otherwise = head $ sqrtFins p a
 
 -- Left means composite with a witness, Right - probably prime
 -- s is how many potential witnesses to check
