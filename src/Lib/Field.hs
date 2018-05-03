@@ -1,4 +1,17 @@
-module Lib.Field where
+module Lib.Field (
+                   Fp2Elem
+                 , Moddable(..)
+                 , Fieldish(..)
+                 , (≡)
+                 , inv
+                 , mexp
+                 , euc
+                 , eGCD
+                 , shankBG
+                 ) where
+
+import Data.List (sort)
+import Data.Maybe (fromMaybe)
 
 type Fp2Elem = (Integer,Integer)
 
@@ -17,16 +30,19 @@ instance Moddable Fp2Elem where
 instance Moddable Integer where
   pmod a (fromIntegral -> p) = mod a p
 
-class (Eq p, Num p, Moddable p) => Fieldish p where
+class (Eq p, Ord p, Num p, Moddable p) => Fieldish p where
   pinv :: Integral n => p -> n -> p
+  toP2 :: p -> Fp2Elem
   zero :: p
   zero = fromInteger 0
 
 instance Fieldish Integer where
   pinv (fromInteger -> a) (fromIntegral -> p) = inv a p
+  toP2 = (fromInteger :: Integer -> Fp2Elem)
 
 instance Fieldish Fp2Elem where
   pinv (x,i) (fromIntegral -> p) = ((x,-i)*(fromInteger $ inv (x*x+i*i) p)) `pmod` p
+  toP2 = id
 
 infix 5 ≡
 (≡) :: (Moddable a, Integral n) => a -> a -> n -> Bool
@@ -62,3 +78,23 @@ eGCD a b | mod a b == 0 = (0,1,b)
          | otherwise = (y,x-y*(a `div` b),z)
         where
           (x,y,z) = eGCD b $ a `mod` b
+
+-- Shank's babystep-giantstep algo for cracking DLP
+-- NB: order calculation is inefficient as all hell
+shankBG :: (Integral n, Fieldish a) => n -> n -> a -> a -> n
+shankBG p order g h = i + j*n
+  where n = 1 + flrt order
+        --order = head . filter (\x -> mexp p g x == 1) $ [1..p]
+        lg = sort [(mexp p g k, k) | k<-[0..n]]
+        lh = sort [((h * pinv (mexp p g (n*k)) p) `pmod` p, k) | k<-[0..n]]
+        (i,j) = fromMaybe (0,0) $ match lg lh
+
+flrt :: Integral n => n -> n  -- flrt x ≈ √x,  with  flrt x² ≤ x < flrt(x+1)²
+flrt = floor . sqrt . fromIntegral
+
+match :: (Integral n, Fieldish a) => [(a,n)] -> [(a,n)] -> Maybe (n,n)
+match [] _ = Nothing
+match _ [] = Nothing
+match xx@((x,i):xs) yy@((y,j):ys) | x == y = Just (i,j)
+                                  | x > y = match xx ys
+                                  | otherwise = match xs yy
