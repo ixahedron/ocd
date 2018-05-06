@@ -66,7 +66,7 @@ Ummmm... Is this trivial or am I missing something?
 {-
 
 We use Prop.6.50 and Prop. 6.53 to conclude that P and φ(P) form a basis
-for E(F_p)[l]. Take an arbitrary Q with order l and rewrite using basis:
+for E[l]. Take an arbitrary Q with order l and rewrite using basis:
                                        Ex.6.41
   φ(Q) = φ(aP + bφ(P)) = aφ(P) + bφ(φ(P)) = aφ(P) - bP
 
@@ -77,11 +77,11 @@ So what happens with the Weil pairing here?
             = e(P,φ(P))^{a^2} * e(φ(P),P)^{ -b^2}
             = e(P,φ(P))^{a^2 + b^2}
 
-We know that φ is an l-distortion map _for P_, so either that Weil pairing is
+We know that φ is an l-distortion map _for P_, so either e(Q,φ(Q)) is
 a primitive l-root of unity, or l|(a^2 + b^2)), according to the definition.
 
-(I'm not sure how to prove that l can't divide (a^2 + b^2) yet.
-But it's probably trivial.)
+We show that l can't divide a^2 + b^2, since that would mean the Weil pairing
+is equal to 1 and φ doesn't distort anything.
 
 l|(a^2+b^2) <=> a^2+b^2 = kl, k in ℤ <=> a^2+b^2 ≡ 0 (mod l)
             <=> a^2 ≡ -b^2 (mod l)
@@ -135,10 +135,11 @@ QED
 
 {-
 
-(a) F*_p is a group of order p-1, and we have to have elements of order 6
-here, since if (z^3) = -1, (z^3)^2 = 1. But p ≡ 2 (mod 3), so it's impossible.
-On the other hand, F_{p^2} contains an element a = g^{(p^2 - 1)/6}, which satisfies
-a^6 = 1, a^3 ≠ 1, so a^3 = -1.
+(a) F*_p is a group of order p-1, and we have to have elements of order 3.
+But p ≡ 2 (mod 3), so it's impossible.
+On the other hand, F_{p^2} contains* an element a = g^{(p^2 - 1)/3}, which satisfies
+a^3 = 1, a^2 ≠ 1.
+*p^2 ≡ p*p ≡ 2*2 ≡ 1 (mod 3)
 
 (b) We've already proved in Ex.6.43b that φ(nP) = nφ(P) for all P ∈ E(K) and all n ≥ 1,
 so we only check that e(P, φ(P)) is a primitive root of unity. To do that, we turn to
