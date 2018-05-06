@@ -17,7 +17,7 @@ module Lib.EllipticCurve (ElCurveF(..)
                         ) where
 
 import Lib.Field
-import Lib (jacobi, binExpansion, sqrtFins)
+import Lib (binExpansion, sqrtFins)
 import Control.Applicative (liftA2)
 
 data ElCurveF = ElCurveF {a_ :: Integer, b_ :: Integer, p_ :: Integer}
@@ -27,6 +27,10 @@ type ELPF = ELP Integer
 type ELPP = ELP Fp2Elem
 data ELP a = O | ELPF {curve_ :: ElCurveF, q_ :: (a,a)}
   deriving (Show, Eq)
+
+normalize :: Fieldish a => ELP a -> ELP a
+normalize O = O
+normalize (ELPF ec (x,y)) = let p = p_ $ ec in ELPF ec (x `pmod` p, y `pmod` p)
 
 class AdditiveGroup p where
   -- identity
@@ -47,9 +51,7 @@ class AdditiveGroup p where
 instance Fieldish a => AdditiveGroup (ELP a) where
   zero = O
   negateP O = O
-  negateP (ELPF c (x,y)) = ELPF c $ norm (x,-y)
-    where p' = p_ c
-          norm (x,y) = (x `pmod` p', y `pmod` p')
+  negateP (ELPF ec (x,y)) = normalize $ ELPF ec (x,-y)
 
   (*^) _ O = O
   (*^) 0 _ = O
@@ -63,18 +65,17 @@ instance Fieldish a => AdditiveGroup (ELP a) where
     | c1 /= c2 = error "not the same curve"
     | otherwise = case lambdaSlope p1 p2 of
                     Nothing -> O
-                    Just λ -> let x3 = (λ*λ-x1-x2) `pmod` (fromInteger p_);
-                                  y3 = (λ*(x1-x3)-y1) `pmod` (fromInteger p_)
-                              in ELPF ElCurveF{..} (x3,y3)
+                    Just λ -> let x3 = (λ*λ-x1-x2);
+                                  y3 = (λ*(x1-x3)-y1)
+                              in normalize $ ELPF ElCurveF{..} (x3,y3)
 
 lambdaSlope :: Fieldish a => ELP a -> ELP a -> Maybe a
 lambdaSlope O _ = Nothing
 lambdaSlope _ O = Nothing
 lambdaSlope p1@(ELPF _ (x1,y1)) p2@(ELPF ElCurveF{..} (x2,y2))
   | p1 == negateP p2 = Nothing
-  | otherwise = Just $ if (x1,y1) == (x2,y2) then ((3*x1*x1+(fromInteger a_)) * pinv (2*y1) p_ ) `pmod` p'
-                                      else ((y2-y1) * pinv (x2-x1) p_) `pmod` p'
-    where p' = fromInteger p_
+  | otherwise = Just $ if (x1,y1) == (x2,y2) then ((3*x1*x1+(fromInteger a_)) * pinv (2*y1) p_ ) `pmod` p_
+                                      else ((y2-y1) * pinv (x2-x1) p_) `pmod` p_
 
 -- Double-and-add algo for elliptic curves
 dadd :: (Fieldish a, Integral n) => ELP a -> n -> ELP a
@@ -97,19 +98,20 @@ millerWeil p q s m = (((f_P (q+^s) * pinv (f_P s) p') `pmod` p') *
         p' = p_ . curve_ $ p
 
 millerG :: Fieldish a => ELP a -> ELP a -> (ELP a -> a)
-millerG p q O = error "points should be non-zero"
+millerG _ _ O = error "points should be non-zero"
 millerG p q s = case lambdaSlope p q of
                   Nothing -> (x - xP) `pmod` p'
                   Just λ  -> ((y - yP - λ*(x - xP)) * pinv (x + xP + xQ - λ*λ) p') `pmod` p'
-  where (x,y) = q_ s; (xP,yP) = q_ p; (xQ,yQ) = q_ q
+  where (x,y) = q_ s; (xP,yP) = q_ p; (xQ,_) = q_ q
         p' = p_ . curve_ $ q
 
 
 millerAlgo :: (Fieldish a, Integral n) => n -> ELP a -> (ELP a -> a)
 millerAlgo m p = miller_aux p 1 mbin
-  where miller_aux t f      [] = let p' = p_ . curve_ $ p in (`pmod` p') . f
-        miller_aux t f (0:bin) = miller_aux (2*^t)     (f^2*(millerG t t)) bin
-        miller_aux t f (1:bin) = miller_aux (2*^t+^p) ((f^2*(millerG t t))*millerG (2*^t) p) bin
+  where miller_aux _ f      [] = let p' = p_ . curve_ $ p in (`pmod` p') . f
+        miller_aux t f (0:bin) = miller_aux (t+^t)     (f*f*(millerG t t)) bin
+        miller_aux t f (1:bin) = miller_aux (t+^t+^p) ((f*f*(millerG t t))*millerG (t+^t) p) bin
+        miller_aux _ _ (_: _ ) = error "binary expansion isn't binary"
 
         _:_:mbin = reverse . binExpansion $ m
 
@@ -120,10 +122,6 @@ instance Num b => Num (a -> b) where
       fromInteger = pure . fromInteger
       abs         = fmap abs
       signum      = fmap signum
-
-normalize :: Fieldish a => ELP a -> ELP a
-normalize O = O
-normalize (ELPF ec (x,y)) = let p = fromInteger . p_ $ ec in ELPF ec (x `pmod` p, y `pmod` p)
 
 showReadable :: Show a => ELP a -> String
 showReadable O        = "EP O"
@@ -139,11 +137,11 @@ listPointsFp2 :: ElCurveF -> [ELPP]
 listPointsFp2 e = O:(map (ELPF e) $ listPointsReadableFp2 e)
 
 listPointsReadable :: ElCurveF -> [(Integer, Integer)]
-listPointsReadable e@ElCurveF{..} = concat . map points $ [0..p_-1]
+listPointsReadable ElCurveF{..} = concat . map points $ [0..p_-1]
   where points x | jacobi (y2 x) p_ == -1 = []
                  | otherwise = [(x,y) | y<-sqrtFins p_ (y2 x)]
 
-        y2 x = x^3 + a_*x + b_
+        y2 x = x*x*x + a_*x + b_
 
 listPointsReadableFp2 :: ElCurveF -> [(Fp2Elem, Fp2Elem)]
 listPointsReadableFp2 e@ElCurveF{..} = concat . map points $ [(i,j) | i<-[0..p_-1], j<-[0..p_-1]]

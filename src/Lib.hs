@@ -17,14 +17,12 @@ module Lib (
            , reduceToPrime
            , primePowers
            , binExpansion
-           , jacobi
            ) where
 
 
 import Data.Numbers.Primes (primes, isPrime, primeFactors)
 import Data.List.Ordered (mergeAll)
-import Data.List (nub, sort)
-import Data.Maybe (fromMaybe)
+import Data.List (nub)
 import Lib.Field
 
 
@@ -43,11 +41,11 @@ e :: Floating a => a
 e = exp 1
 
 -- ln for integer arguments, kinda legacy I guess?
-ln :: Floating a => Integer -> a
-ln = lnR . fromInteger
+ln :: (Floating a, Integral n) => n -> a
+ln = lnR . fromIntegral
 
 -- binomial coefficient (n k)
-binom :: Integer -> Integer -> Integer
+binom :: Integral n => n -> n -> n
 binom n k = product [n-k+1..n] `div` product [1..k]
 
 -- is an integer a perfect square?
@@ -60,12 +58,12 @@ intSqrt :: Integral n => n -> n
 intSqrt = truncate . sqrt . fromIntegral
 
 -- all vectors of length n with elems taken from a given charset
--- combs [0,1] 3 = [[0,0],[0,1],[1,0],[1,1]] e.g.
-combs :: [a] -> Integer -> [[a]]
+-- combs [0,1] 2 = [[0,0],[0,1],[1,0],[1,1]] e.g.
+combs :: Integral n => [a] -> n -> [[a]]
 combs cs n = mapM (const cs) [1..n]
 
 -- b-smooth := has factors <=b only
-isBSmooth :: Integer -> Integer -> Bool
+isBSmooth :: Integral n => n -> n -> Bool
 isBSmooth b x = let xfactors = primeFactors x in all (<= b) xfactors
 
 -- dumb bruteforce solver of equations modulo N
@@ -73,7 +71,7 @@ isBSmooth b x = let xfactors = primeFactors x in all (<= b) xfactors
 solveEq :: Integer -> Integer -> [Integer]
 solveEq m n = solve_aux [1..n]
   where solve_aux [] = []
-        solve_aux (t:ts) | mexp n t 2 == m `mod` n = t : solve_aux ts
+        solve_aux (t:ts) | mexp n t 2 ≡ m $ n = t : solve_aux ts
                          | otherwise = solve_aux ts
 
 -- take a square root in a finite field
@@ -82,15 +80,16 @@ sqrtFins :: Integer -> Integer -> [Integer]
 sqrtFins p a = [b | b<-[1..p-1], mexp p b 2 ≡ a $ p] -- yeah yeah, unsafe, inefficient
 
 sqrtFin :: Integer -> Integer -> Integer
-sqrtFin p a | p ≡ 3 $ 4 = mexp p (a `mod` p) ((p+1) `div` 4)
+sqrtFin p a | p ≡ 3 $ 4 = mexp p a ((p+1) `div` 4)
             | otherwise = head $ sqrtFins p a
 
 -- Left means composite with a witness, Right - probably prime
 -- s is how many potential witnesses to check
-millerRabinTest :: Int -> Integer -> Either Integer [Integer]
-millerRabinTest s n | n > 2 && even n = Left (-2)
-                    | any (\a -> gcd a n > 1) as = Left (-1)
-                    | otherwise       = mrt_aux 0 $ map (\a -> mexp n a q) as
+millerRabinTest :: Integer -> Integer -> Either Integer [Integer]
+millerRabinTest (fromIntegral -> s) n
+  | n > 2 && even n = Left (-2)
+  | any (\a -> gcd a n > 1) as = Left (-1)
+  | otherwise = mrt_aux 0 $ map (\(fromIntegral -> a) -> mexp n a q) as
   where as = take s primes
         (k,q) = reduceToOdd $ n-1
 
@@ -103,20 +102,20 @@ millerRabinTest s n | n > 2 && even n = Left (-2)
 
 -- reduces a number to the product of all its odd divisors
 -- reduceToOdd n = (k,p) => n = 2^k * p
-reduceToOdd :: Integer -> (Integer, Integer)
+reduceToOdd :: Integral n => n -> (n,n)
 reduceToOdd m = reduce 0 m
   where reduce k n | odd n = (k,n)
                    | otherwise = reduce (k+1) $ n `div` 2
 
 -- reduces a number to just the largest of the factors
-reduceToPrime :: Integer -> Integer
+reduceToPrime :: Integral n => n -> n
 reduceToPrime n | isPrime n = n
-                | otherwise = reduceToPrime $  n `div` (head . primeFactors $ n)
+                | otherwise = reduceToPrime $ n `div` (head . primeFactors $ n)
 
 -- an infinite list of numbers with 1 unique factor
 -- [2,3,4,5,7,8,9,11,...]
-primePowers :: [Integer]
-primePowers = mergeAll [[p^i | i <- [1..]] | p <- primes]
+primePowers :: Integral n => [n]
+primePowers = mergeAll [[p^i | i <- [(1 :: Integer)..]] | p <- primes]
 
 -- compute coefficients for the binary expansion of an integer
 binExpansion :: Integral n => n -> [n]
@@ -131,22 +130,3 @@ checkCarmichael n | even n || isPrime n = False
                   | otherwise           = all fermat fcts
   where fcts = primeFactors n
         fermat p = all (\a -> mexp p a n == a) [0..p-1]
-
--- Jacobi symbol
-jacobi :: Integer -> Integer -> Integer
-jacobi (-1) b | b `mod` 4 == 1 = 1
-              | b `mod` 4 == 3 = -1
-              | otherwise = error "even b"
-jacobi   2  b | (b `mod` 8) `elem` [1,7] = 1
-              | (b `mod` 8) `elem` [3,5] = -1
-              | otherwise = error "even b"
-jacobi   a  b | a `mod` b == 0 = 0
-              | a `mod` b == b-1 = jacobi (-1) b
-              | a `mod` b == 2   = jacobi 2 b
-              | even a = let (k,p) = reduceToOdd a;
-                             q = if even k then 1 else jacobi 2 b
-                         in q * jacobi p b
-              | odd b = case (a `mod` 4, b `mod` 4) of
-                          (3,3) -> jacobi (-1) a * (jacobi (b `mod` a) a)
-                          _ -> jacobi (b `mod` a) a
-              | otherwise = error "even b"

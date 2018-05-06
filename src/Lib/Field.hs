@@ -7,6 +7,7 @@ module Lib.Field (
                  , mexp
                  , euc
                  , eGCD
+                 , jacobi
                  , shankBG
                  ) where
 
@@ -30,7 +31,7 @@ instance Moddable Fp2Elem where
 instance Moddable Integer where
   pmod a (fromIntegral -> p) = mod a p
 
-class (Eq p, Ord p, Num p, Moddable p) => Fieldish p where
+class (Ord p, Num p, Moddable p) => Fieldish p where
   pinv :: Integral n => p -> n -> p
   toP2 :: p -> Fp2Elem
   zero :: p
@@ -78,6 +79,28 @@ eGCD a b | mod a b == 0 = (0,1,b)
          | otherwise = (y,x-y*(a `div` b),z)
         where
           (x,y,z) = eGCD b $ a `mod` b
+
+-- Jacobi symbol
+jacobi :: Integral n => n -> n -> n
+jacobi (-1) b | b `mod` 4 == 1 = 1
+              | b `mod` 4 == 3 = -1
+              | otherwise = error "even b"
+jacobi   2  b | (b `mod` 8) `elem` [1,7] = 1
+              | (b `mod` 8) `elem` [3,5] = -1
+              | otherwise = error "even b"
+jacobi   a  b | a `mod` b == 0 = 0
+              | a `mod` b == b-1 = jacobi (-1) b
+              | a `mod` b == 2   = jacobi 2 b
+              | even a = let (k,p) = reduce 0 a;
+                             q = if even k then 1 else jacobi 2 b
+                         in q * jacobi p b
+              | odd b = case (a `mod` 4, b `mod` 4) of
+                          (3,3) -> jacobi (-1) a * (jacobi (b `mod` a) a)
+                          _ -> jacobi (b `mod` a) a
+              | otherwise = error "even b"
+  where reduce :: Integral n => n -> n -> (n,n)
+        reduce k n | odd n = (k,n)
+                   | otherwise = reduce (k+1) $ n `div` 2
 
 -- Shank's babystep-giantstep algo for cracking DLP
 -- NB: order calculation is inefficient as all hell

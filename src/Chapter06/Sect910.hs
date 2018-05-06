@@ -1,6 +1,5 @@
 import Lib.EllipticCurve
-import Lib.Field (Fieldish(..), Fp2Elem, Moddable(..), mexp, shankBG)
-import Data.List (find)
+import Lib.Field (Fieldish(..), Fp2Elem, shankBG)
 
 -- 6.34 same as 6.38
 
@@ -166,24 +165,24 @@ modWeil :: (Integral n, Fieldish a) => (ELP a -> ELPP) -> ELP a -> ELP a -> ELPP
 modWeil φ p q = millerWeil (toLargerField p) (φ q)
 
 toLargerField :: Fieldish a => ELP a -> ELPP
+toLargerField O = O
 toLargerField (ELPF c (x,y)) = ELPF c (toP2 x, toP2 y)
 
+weil645 :: Integral n => ELPF -> ELPF -> ELPP -> n -> Fp2Elem
 weil645 = modWeil φ645
 
 φ645 :: ELPF -> ELPP
+φ645 O = O
 φ645 (ELPF c (x,y)) = ELPF c (fromInteger $ -x, (0,y))
 
+e645 :: ElCurveF
 e645 = ElCurveF 1 0 691
+
+p645 :: ELPF
 p645 = ELPF e645 (301,14)
 
--- found manually
---λ> onCurve s645
---True
+s645 :: ELPP
 s645 = ELPF e645 ((133,348),(245,499))
-
-teste = ElCurveF 1 0 547
-testp = ELPF teste (67,481)
-tests = ELPF teste ((256,110),(441,15))
 
 -- 6.46
 
@@ -206,7 +205,7 @@ mov φ p q s l = shankBG p' l êPP êPQ
         êPQ = modWeil φ p q s l
         p' = fromInteger . p_ . curve_ $ p
 
-
+q646 :: ELPF
 q646 = ELPF e645 (143,27)
 
 -- 6.47
@@ -234,12 +233,16 @@ type PbKey = ELPF
 pubK :: ELPF -> PrKey -> PbKey
 pubK p n = n*^p
 
+e647 :: ElCurveF
 e647 = ElCurveF 1 0 1723
+
+p647, qA647, qB647, qC647 :: ELPF
 p647 = ELPF e647 (668,995)
 qA647 = pubK p647 278
 qB647 = ELPF e647 (1275,1550)
 qC647 = ELPF e647 (897,1323)
 
+s647 :: ELPP
 s647 = ELPF e647 ((0,3),(166,166))
 
 -- 6.48
