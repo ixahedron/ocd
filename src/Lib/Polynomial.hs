@@ -41,7 +41,7 @@ sgn a | a >= 0    = "+"
       | otherwise = []
 
 pprint :: Poly -> IO ()
-pprint (P p) = putStrLn . show . P . reverse . (sortOn snd) $ p
+pprint (P p) = print . P . reverse . sortOn snd $ p
 
 add :: Poly -> Poly -> Poly
 add p (P []) = p
@@ -54,15 +54,15 @@ mult _ (P []) = P []
 mult (P p1) (P p2) = P . normalize $ ((\(a,x) (b,y) -> (a*b, x+y)) <$> p1 <*> p2)
 
 normalize :: [(Integer, Integer)] -> [(Integer, Integer)]
-normalize = filter (\x -> fst x /= 0) . map (\m -> (sum . (map fst) $ m, snd . head $ m)) .
-            (groupBy ((==) `on` snd)) . (sortOn (\x -> - snd x))
+normalize = filter (\x -> fst x /= 0) . map (\m -> (sum . map fst $ m, snd . head $ m)) .
+            groupBy ((==) `on` snd) . sortOn (\x -> - snd x)
 
 -- in case of a finite field, take all coefficients mod p
 reduceCoefs :: Integer -> [(Integer,Integer)] -> [(Integer,Integer)]
-reduceCoefs p ps = map (\(a,x) -> (a `mod` p,x)) ps
+reduceCoefs p = map (\(a,x) -> (a `mod` p,x))
 
 asToFieldF :: PolyF -> PolyF
-asToFieldF poly = (reduceCoefs (p poly)) `overF` poly
+asToFieldF poly = reduceCoefs (p poly) `overF` poly
 
 instance Num PolyF where
   (PolyF p q a) + (PolyF p' q' b) = asToFieldF $ PolyF p q (a + b)
@@ -112,7 +112,7 @@ pinv :: PolyF -> PolyF
 pinv pf = let q = fieldSize pf in pf^(q-2)
 
 fieldSize :: PolyF -> Integer
-fieldSize PolyF{..} = p^(deg quot)
+fieldSize PolyF{..} = p ^ deg quot
 
 deg :: Poly -> Integer
 deg (P []) = -1
@@ -120,7 +120,7 @@ deg      p = snd . highest $ p
 
 highest :: Poly -> (Integer, Integer)
 highest (P []) = undefined
-highest (P p)  = last . (sortOn snd) . normalize $ p
+highest (P p)  = last . sortOn snd . normalize $ p
 
 numberOfNonZeroTerms :: Poly -> Integer
 numberOfNonZeroTerms (P p) = toInteger . length . normalize $ p

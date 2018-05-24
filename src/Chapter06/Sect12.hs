@@ -163,13 +163,13 @@ data ELPF = O | ELPF {curve :: ElCurveF, q :: (Integer, Integer)}
 
 onCurve :: ELPF -> Bool
 onCurve O = True
-onCurve (ELPF ElCurveF{..} (x,y)) = y^2 ≡ (x^3 + a*x + b) $ p 
+onCurve (ELPF ElCurveF{..} (x,y)) = y^2 ≡ (x^3 + a*x + b) $ p
 
 listPoints :: ElCurveF -> [ELPF]
-listPoints e = O:(map (ELPF e) $ listPointsReadable e)
+listPoints e = O : map (ELPF e) (listPointsReadable e)
 
 listPointsReadable :: ElCurveF -> [(Integer,Integer)]
-listPointsReadable e@ElCurveF{..} = concat . map points $ [0..p-1]
+listPointsReadable e@ElCurveF{..} = concatMap points [0..p-1]
   where points x | jacobi (x^3 + a*x + b) p == -1 = []
                  | otherwise = [(x,y) | y<-[0..p-1], onCurve $ ELPF e (x,y)]
 

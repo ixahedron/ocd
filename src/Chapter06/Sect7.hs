@@ -181,7 +181,7 @@ t_1*t_{k-1} - 2*t_{k-2} = α^k + β^k = t_k
 
 -- Assuming the Koblitz curve E0, take an integer p and compute #E0(F_2^p)
 curveSizeE0 :: Integer -> Integer
-curveSizeE0 k = let tt = fst $ runState (t k) (M.empty :: M.Map Integer Integer) in 2^k + 1 - tt
+curveSizeE0 k = let tt = evalState (t k) (M.empty :: M.Map Integer Integer) in 2^k + 1 - tt
   where t 1 = pure $ -1
         t 2 = pure $ -3
         t k = do

@@ -36,9 +36,9 @@ isBSmooth b x = let xfactors = primeFactors x in all (<= b) xfactors
     (<=) is transitive, basically nothing to prove
 (b) not always, see (c)
 (c)
-λ> filter isSmooth3v28 l3v28 
+λ> filter isSmooth3v28 l3v28
 [84,224,378,420,504]
-λ> filter isPowSmooth3v28 l3v28 
+λ> filter isPowSmooth3v28 l3v28
 [84,420,504]
 
 (d) the first thing is to notice that lcm [1..B] is just a product
@@ -69,7 +69,7 @@ isBPowerSmooth :: Integer -> Integer -> Bool
 isBPowerSmooth b x = all (<= b) $ factorPowers x
 
 factorPowers :: Integer -> [Integer]
-factorPowers = (map product) . group . primeFactors
+factorPowers = map product . group . primeFactors
 
 -- 3.29
 
@@ -95,13 +95,13 @@ Bless Haskell's integers
 -}
 
 lnL :: Integer -> Double
-lnL x = sqrt $ (ln x) * (lnR . ln $ x)
+lnL x = sqrt $ ln x * (lnR . ln $ x)
 
 fL :: Integer -> Double
-fL x = e**(lnL x)
+fL x = e ** lnL x
 
 -- opsPerTime t x gives you opsPerSec for t = 1,
---                          opsPerMin for t = 60 etc 
+--                          opsPerMin for t = 60 etc
 opsPerTime :: Double -> Double -> Integer
 opsPerTime t x = ceiling $ (fromIntegral . ceiling $ x/(10^9)) / t
 
@@ -137,7 +137,7 @@ F_a,b(x) := exp( ln(x)^(1/a) * lnln(x)^(1/b)  )
 
     ln(x)^α = exp(α*ln(ln(x)))
 
-    lim F_a,b(X) / exp(α*lnlnX) = lim exp( lnX^(1/a) * lnlnX^(1/b) - α*lnlnX ) = 
+    lim F_a,b(X) / exp(α*lnlnX) = lim exp( lnX^(1/a) * lnlnX^(1/b) - α*lnlnX ) =
     X->∞                          X->∞
 
                        ->∞                      ->∞
@@ -145,8 +145,8 @@ F_a,b(x) := exp( ln(x)^(1/a) * lnln(x)^(1/b)  )
          X->∞
 
   (ii) β>0 => F_a,b(X) = O(X^β)
-    
-     lim F_a,b(X) / exp(β*lnX) = lim exp( lnX^(1/a) * lnlnX^(1/b) - β*lnX ) =  
+
+     lim F_a,b(X) / exp(β*lnX) = lim exp( lnX^(1/a) * lnlnX^(1/b) - β*lnX ) =
      X->∞                          X->∞
                                                *
      exp(lim lnX^(1/a) * lnlnX^(1/b) - β*lnX ) = exp(-∞) = 0
@@ -157,11 +157,11 @@ F_a,b(x) := exp( ln(x)^(1/a) * lnln(x)^(1/b)  )
 
        a>1 => 1-(1/a) >0, lnX > 0, lnlnX - lnX^(>0) < 0
        so their product < 0
-         
-     
+
+
      lim F_a,b/X^β = 0 < ∞ => F_a,b = O(X^β).
      X->∞
-       
+
 (b) a = 1:
                                             *
   exp(lim lnX^(1/a) * lnlnX^(1/b) - β*lnX ) = exp(+∞) = ∞
@@ -178,8 +178,8 @@ F_a,b(x) := exp( ln(x)^(1/a) * lnln(x)^(1/b)  )
 -}
 
 
-f_AB a b x = e**(e1*e2)
-  where e1 = (ln x)**(1/a)
+fAB a b x = e**(e1*e2)
+  where e1 = ln x ** (1/a)
         e2 = (lnR . ln $ x)**(1/b)
 
 
@@ -198,7 +198,7 @@ I think it's somewhat easier to use 1/2-ε, so let's define
 (i) (lnX)^(1/2 - α) < √(lnX * lnlnX):
 
 Notice that for all X > e^e every choice of α works:
-  
+
   lnlnX > 1 => √(lnX * lnlnX) > √lnX =>
   => forall α in (0,1/2) (lnX)^(1/2-α) < lnL(X)
 
@@ -269,13 +269,13 @@ j := 1/√r
   lim  ln(exp(√(lnM*lnlnM)))/ln(exp(√(lnN*lnlnN))^j) =
   N->∞
 
-  lim  √(lnM*lnlnM) / (j*√(lnN*lnlnN)) = 
+  lim  √(lnM*lnlnM) / (j*√(lnN*lnlnN)) =
   N->∞
 
-  lim  √(1/r * lnN*ln(1/r * lnN)) / √(1/r * lnN*lnlnN) = 
+  lim  √(1/r * lnN*ln(1/r * lnN)) / √(1/r * lnN*lnlnN) =
   N->∞
 
-  lim  √(ln(1/r * lnN)) / √lnlnN = lim √((ln(1/r) + lnlnN) / lnlnN) = 
+  lim  √(ln(1/r * lnN)) / √lnlnN = lim √((ln(1/r) + lnlnN) / lnlnN) =
   N->∞                             N->∞
 
   √(lim  ((ln(1/r) + lnlnN) / lnlnN)) =
@@ -329,14 +329,14 @@ combineRels n ((s1,rfs):rs) = comb_aux rs
                                     else comb_aux ls
 
         sqre = all even . map length
-        half = concat . map (\l -> take ((length l) `div` 2) l)
+        half = concatMap (\l -> take (length l `div` 2) l)
 
 
 sieve :: Integer -> Integer -> [Integer] -> [(Integer, [Integer])]
 sieve n maxb = sieveBy (map reduceToPrime $ takeWhile (<= maxb) primePowers)
   where
     sieveBy  _     [] = []
-    sieveBy ps (t:ts) | mexp n t 2 == (product l) `mod` n = (t, l) : (sieveBy ps ts)
+    sieveBy ps (t:ts) | mexp n t 2 == product l `mod` n = (t, l) : sieveBy ps ts
                       | otherwise = sieveBy ps ts
       where
         sieveBy_aux  _     [] = []
@@ -344,7 +344,7 @@ sieve n maxb = sieveBy (map reduceToPrime $ takeWhile (<= maxb) primePowers)
                               | otherwise = p : sieveBy_aux (ft `div` p) ps
 
         l = sieveBy_aux (f t) ps
-  
+
     f t = t^2 - n
 
 -- dumb bruteforce solver of equations modulo N

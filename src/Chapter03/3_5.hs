@@ -26,9 +26,9 @@ pollard n = let js = [3..100] in aux (nexp 2 2) js
   where aux _ [] = Nothing
         aux a (j:js) = let d = gcd n $ a-1
                        in if 1 < d && d < n
-                          then Just (d, (n `div` d))
+                          then Just (d, n `div` d)
                           else aux (nexp a j) js
-  
+
         nexp = mexp n
 
 
@@ -95,18 +95,18 @@ factorBySqDiff324 = factorBySqDiff 1 1
 
 -- kill me
 factorBySqDiff :: Integer -> Integer -> Integer -> [Integer]
-factorBySqDiff k bI m = factor_aux m
+factorBySqDiff k bI = factor_aux
   where factor_aux 1 = []
         factor_aux n
           | isSquare n = let l = factor_aux . intSqrt $ n in l ++ l
           | isPrime n = [n]
-          | even n = 2 : (factor_aux $ n `div` 2)
+          | even n = 2 : factor_aux (n `div` 2)
           | otherwise = findB [bI..] -- living on the edge
-      
+
           where findB (b:bs) = let a2 = k*n + b^2
                                in if isSquare a2
                                   then let a = intSqrt a2
-                                           (p,q) = (gcd n $ a+b, gcd n $ a-b) 
+                                           (p,q) = (gcd n $ a+b, gcd n $ a-b)
                                        in (++) (factor_aux p) $! factor_aux q
                                   else findB bs
 
@@ -135,7 +135,7 @@ intSqrt = truncate . sqrt . fromIntegral
 
 {-
 
-λ> factorByLE d326a                
+λ> factorByLE d326a
 Just (227,269)
 λ> factorByLE d326b
 Just (277,191)
@@ -174,14 +174,14 @@ factorByLE :: (Integer, [([Integer], Integer)]) -> Maybe (Integer, Integer)
 factorByLE (n,cs) = let solvs = combs $ map fst cs in tryOut solvs
   where ps = take (length . fst . head $ cs) primes
         tryOut    []  = Nothing
-        tryOut (v:vs) = let res = tryGCD . filter (\x -> snd x /= 0) .
-                              (zipWith (\vi (l,i) -> (l,vi*i)) v) $ cs
-                        in if isJust $ res then res else tryOut vs
-        
-        tryGCD acs = let res = gcd n $ p-(sqr acs); p = product . map snd $ acs 
+        tryOut (v:vs) = let res = filter (\x -> snd x /= 0) . zipWith (\vi (l,i) -> (l,vi*i)) v $ cs
+                        in if isJust $ tryGCD res then res else tryOut vs
+
+        tryGCD acs = let res = gcd n $ p - sqr acs;
+                         p = product . map snd $ acs
                          sqr = product . zipWith (^) ps . map ((`div` 2) . sum) . transpose . map fst
                      in if res == 1 || res == n then Nothing else Just (res, n `div` res)
-        
+
 
 combs :: [[Integer]] -> [[Integer]]
 combs cs = let n = length cs in mapM (const [0,1]) [1..n]

@@ -31,7 +31,7 @@ crt [] = Nothing
 crt ((f,s):xs) = crt' xs (f,s)
   where crt' []         (r,m) = Just r
         crt' ((t,n):xs) (r,m) = if gcd m n == 1 then crt' xs (sol, m*n) else Nothing -- not coprime
-          where sol = r + invy * m 
+          where sol = r + invy * m
                 invy = (inv m n * (norm t-r)) `mod` n
 
                 norm x = if x >= 0 then x else x+n
@@ -73,7 +73,7 @@ is also a true expression.
 Every solution has the form a + cm + ymn:
 
   a + b `mod` m = a `mod` m + b `mod` m.
-  
+
 Use that to prove:
                                         = 0
   a + cm + ymn mod m === a + cm mod m + ymn mod m === a + cm mod m = a
@@ -92,7 +92,7 @@ a|c <=> c = ax
            gcd a b = 1
 b|c => b|ax    =>     c = aby <=> ab|c QED
 
-(b) 
+(b)
 
 -}
 
@@ -115,19 +115,19 @@ b|c => b|ax    =>     c = aby <=> ab|c QED
 smsqrt :: Integer -> Integer -> [Maybe Integer]
 smsqrt a m = [crt x | x<-combs ss]
   where ss = msqrt a m
-        
+
         combs :: [(Integer, Integer)] -> [[(Integer, Integer)]]
         combs [] = [[]]
-        combs (s:ss) = let negfst (x,y) = (-x,y) in map (s:) (combs ss) ++ map ((negfst s):) (combs ss)
+        combs (s:ss) = let negfst (x,y) = (-x,y) in map (s:) (combs ss) ++ map (negfst s : ) (combs ss)
 
 msqrt :: Integer -> Integer -> [(Integer, Integer)]
-msqrt a m = nub . msqrt' . primeFactors $ m
+msqrt a = nub . msqrt' . primeFactors
   where msqrt'     [] = []
         msqrt' (x:xs) = (y,x) : msqrt' xs
           where y = if x `mod` 4 == 3 then b^((x+1) `div` 4) `mod` x else naiveroot
                 b = a `mod` x
 
-                naiveroot = head $ [c | c <- [1..x], c^2 `mod` x == b]
+                naiveroot = head [c | c <- [1..x], c^2 `mod` x == b]
 
 -- 2.24
 
@@ -147,7 +147,7 @@ In the following, let's assume without loss of generality that a /= 0.
 
 For (b + kp)^2 to be congruent to a, we need to choose q + 2bk === 0 mod p^2 or q + 2bk === p mod p^2a.
 In either case, q + 2bk === 0 mod p => q + 2bk = np, n in Z.
-  
+
 Let's reform that last result a bit: we need to find k,n so that np - 2bk = q.
 
   Recall Bezout's identity: if a and b /= 0, there exist integers x,y so that

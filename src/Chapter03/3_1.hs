@@ -5,25 +5,25 @@ import Data.Ratio
 -- 3.1
 
 -- x^e ≡ c mod N
-solve_congruence :: (Integer,Integer) -> Integer -> Integer -> Integer
-solve_congruence (1,p) c e = let d = inv e (p-1) in (c^d) `mod` p
-solve_congruence (p,1) c e = solve_congruence (1,p) c e
-solve_congruence (p,q) c e = c^d `mod` (p*q)
+solveCongruence :: (Integer,Integer) -> Integer -> Integer -> Integer
+solveCongruence (1,p) c e = let d = inv e (p-1) in (c^d) `mod` p
+solveCongruence (p,1) c e = solveCongruence (1,p) c e
+solveCongruence (p,q) c e = c^d `mod` (p*q)
   where d = inv e $ (p-1)*(q-1) `div` g
         g = gcd (p-1) (q-1)
-        
+
 
 {-
 
-*Main> solve_congruence (97,1) 36 19         
+*Main> solveCongruence (97,1) 36 19
 36
-*Main> solve_congruence (541,1) 428 137
+*Main> solveCongruence (541,1) 428 137
 213
-*Main> solve_congruence (19,61) 614 73 
+*Main> solveCongruence (19,61) 614 73
 158
-*Main> solve_congruence (71,113) 677 751
+*Main> solveCongruence (71,113) 677 751
 1355
-*Main> solve_congruence (607,661) 328047 38993
+*Main> solveCongruence (607,661) 328047 38993
 36219
 
 -}
@@ -97,19 +97,19 @@ i. gcd c p > 1 <=> p = ck for some k in Z.
 
 -- 3.4
 
-phi_naive :: Integer -> Integer
-phi_naive n = fromIntegral . length $ filter (\x -> gcd n x == 1) [1..n]
+φNaive :: Integer -> Integer
+φNaive n = fromIntegral . length $ filter (\x -> gcd n x == 1) [1..n]
 
 {-
 
 (a)
-*Main> phi_naive 6
+*Main> φNaive 6
 2
-*Main> phi_naive 9
+*Main> φNaive 9
 6
-*Main> phi_naive 15
+*Main> φNaive 15
 8
-*Main> phi_naive 17
+*Main> φNaive 17
 16
 
 
@@ -155,18 +155,18 @@ After subtracting from p^j - p^(j-1), only relatively prime to p^j numbers are l
 (c) (I hereby confess I've read the proof after despairing of working it out myself. Me 3stupid5thisshit :/)
 
 (d) Let's start with the epiphany that we can rewrite (b) so that it kinda relates to the formula we're trying to prove:
-  
+
   p^j - p^(j-1) = p^(j-1) * (p-1) = p^j * (1 - 1/p)
 
 Yay! Now, let's recall 1.20, the Fundamental Theorem of Arithmetics, which states that any integer can be factored
 as a unique product of prime powers:
 
   a = p_1^e_1 * p_2^e_2 * ... * p_r^e_r
-  
+
 Ummm... Okay, now we can probably use all this to rewrite φ(N) in the following matter:
-  
+
       1.20           (c)                         (b)
-  φ(N) = φ(Π p_i^e_i) = φ(p_1^e_1)*...*φ(p_r^e_r) = p_1^e_1 * (1 - 1/p_1) * ... * p_r^e_r * (1 - 1/p_r) = 
+  φ(N) = φ(Π p_i^e_i) = φ(p_1^e_1)*...*φ(p_r^e_r) = p_1^e_1 * (1 - 1/p_1) * ... * p_r^e_r * (1 - 1/p_r) =
                      ooooh but the first product is exactly our N factorisation!
   = p_1^e_1*...*p_r^e_r * Π^r_i=1 (1 - 1/p_i) = N * Π^r_i=1 (1 - 1/p_i)
 
@@ -208,19 +208,19 @@ So yeah, QED.
 
 -}
 
-solve_by_phi :: Integer -> Integer -> Integer -> Integer
-solve_by_phi e c n = c^d `mod` n
+solveByφ :: Integer -> Integer -> Integer -> Integer
+solveByφ e c n = c^d `mod` n
   where d = inv e $ phi n
 
 {-
 
 (b)
 
-*Main> solve_by_phi 577 60 1463
+*Main> solveByφ 577 60 1463
 1390
-*Main> solve_by_phi 959 1583 1625
+*Main> solveByφ 959 1583 1625
 147
-*Main> solve_by_phi 133957 224689 2134440
+*Main> solveByφ 133957 224689 2134440
 1892929
 
 -}

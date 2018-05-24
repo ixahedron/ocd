@@ -60,7 +60,7 @@ Contradiction, QED
 A composite number n is a Carmichael number iff n = p_1*p_2*...*p_n
 is a product of distinct primes and for every j (p_j - 1) | (n-1)
 
-*Main> korselt [13,37,61]   
+*Main> korselt [13,37,61]
 True
 *Main> korselt [307,613,919]
 True
@@ -97,20 +97,20 @@ noice
 -- corner cases, thoughts?)
 millerRabinTest :: Int -> Integer -> Either Integer [Integer]
 millerRabinTest s n | n > 2 && even n = Left (-2)
-                    | any (\a -> gcd a n > 1) as = Left (-1) 
+                    | any (\a -> gcd a n > 1) as = Left (-1)
                     | otherwise       = mrt_aux 0 $ map (\a -> mexp n a q) as
   where as = take s primes
         (k,q) = reduceToOdd $ n-1
 
         mrt_aux _    [] = Right as
         mrt_aux 0 (a:xs) | (a `mod` n) `elem` [1,-1,n-1] = mrt_aux 0 xs
-                         | otherwise = mrt_aux 1 ((mexp n a 2):xs)
+                         | otherwise = mrt_aux 1 (mexp n a 2 : xs)
         mrt_aux j (a:xs) | j == k = Left $ as !! (s - length (a:xs))
                          | (a `mod` n) `elem` [-1,n-1] = mrt_aux 0 xs
-                         | otherwise = mrt_aux (j+1) ((mexp n a 2):xs)
+                         | otherwise = mrt_aux (j+1) (mexp n a 2 : xs)
 
 reduceToOdd :: Integer -> (Integer, Integer)
-reduceToOdd n = reduce 0 n
+reduceToOdd = reduce 0
   where reduce k n | odd n = (k,n)
                    | otherwise = reduce (k+1) $ n `div` 2
 
@@ -137,9 +137,9 @@ the Chinese theorem, which is related to Miller-Rabin test.
 25
 
 (b)
-*Main> map piFunc [10^x | x<-[2..5]] 
+*Main> map piFunc [10^x | x<-[2..5]]
 [25,168,1229,9592]
-*Main> map piRatio [10^x | x<-[2..5]] 
+*Main> map piRatio [10^x | x<-[2..5]]
 [1.151292546497023,1.1605028868689988,1.131950831715873,1.1043198105999443]
 
 Sure, it's plausible.
@@ -165,7 +165,7 @@ ln x = let e = exp 1 in logBase e $ fromInteger x
 3
 *Main> pi3 25
 5
-*Main> map pi1 [10^x | x<-[1..5]]                     
+*Main> map pi1 [10^x | x<-[1..5]]
 [1,11,80,609,4783]
 *Main> map pi3 [10^x | x<-[1..5]]
 [2,13,87,619,4808]
@@ -258,10 +258,10 @@ meaning that v(x) = x. Plug that into the formula:
 
                                                        ***
   ∫{2,X} 1/ln(t) * 1 dt = [t/ln(t)]{2,X} - ∫{2,X} t*(1/ln(t))'dt =
-                                      
+
   X/lnX - 2/ln2 - ∫{2,X} t * (-1) * 1/(ln(t)^2) * 1/t dt =
 
-  X/lnX - 2/ln2 + ∫{2,X} 1/(ln(t))^2 dt = 
+  X/lnX - 2/ln2 + ∫{2,X} 1/(ln(t))^2 dt =
 
   X/lnX + ∫{2,X} dt/(ln(t))^2 + C
 

@@ -68,8 +68,8 @@ Now we use the fact (Th.6.36) that every function without zeros is constant. QED
 -}
 
 millerWeil :: ELPF -> ELPF -> ELPF -> Integer -> Integer
-millerWeil p@(ELPF{..}) q s m = (((f_P (q+^s) * inv (f_P s) p') `mod` p') *
-                                (inv ((f_Q (p -^ s)) * inv (f_Q (negateP s)) p') p')) `mod` p'
+millerWeil p@ELPF{..} q s m = (((f_P (q+^s) * inv (f_P s) p') `mod` p') *
+                                inv (f_Q (p -^ s) * inv (f_Q (negateP s)) p') p') `mod` p'
   where f_P = millerAlgo m p
         f_Q = millerAlgo m q
         p' = p_ curve_
@@ -86,8 +86,8 @@ millerG p q s = case lambdaSlope p q of
 millerAlgo :: Integer -> ELPF -> (ELPF -> Integer)
 millerAlgo m p = miller_aux p 1 mbin
   where miller_aux t f [] = let p' = p_ . curve_ $ p in (`mod` p') . f
-        miller_aux t f (0:bin) = miller_aux (2*^t)     (f^2*(millerG t t)) bin
-        miller_aux t f (1:bin) = miller_aux (2*^t+^p) ((f^2*(millerG t t))*millerG (2*^t) p) bin
+        miller_aux t f (0:bin) = miller_aux (2*^t)     (f^2 * millerG t t) bin
+        miller_aux t f (1:bin) = miller_aux (2*^t+^p) ((f^2 * millerG t t)*millerG (2*^t) p) bin
 
         _:_:mbin = reverse . binExpansion $ m
 

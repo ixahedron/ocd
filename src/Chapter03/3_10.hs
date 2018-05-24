@@ -34,7 +34,7 @@ data PrvK = PrvK { prvP :: Integer
 
 encrypt :: PubK -> Bool -> Integer -> Integer
 encrypt (PubK n a) bit r = let q = if bit then a else 1
-                             in (q*(mexp n r 2)) `mod` n
+                             in (q * mexp n r 2) `mod` n
 
 decrypt :: PrvK -> Integer -> Bool
 decrypt prvk c = case jacobi c $ prvP prvk of

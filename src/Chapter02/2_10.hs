@@ -119,7 +119,7 @@ sgn a | a >= 0    = "+"
       | otherwise = []
 
 pprint :: Poly -> IO ()
-pprint (P p) = putStrLn . show . P . reverse . (sortOn snd) $ p
+pprint (P p) = print . P . reverse . sortOn snd $ p
 
 
 {--instance Functor Poly where
@@ -141,7 +141,7 @@ mult _ (P []) = P []
 mult (P p1) (P p2) = P . normalize $ ((\(a,x) (b,y) -> (a*b, x+y)) <$> p1 <*> p2)
 
 normalize :: [(Integer, Integer)] -> [(Integer, Integer)]
-normalize = filter (\x -> fst x /= 0) . map (\m -> (sum . (map fst) $ m, snd . head $ m)) . (groupBy ((==) `on` snd)) . (sortOn snd)
+normalize = filter (\x -> fst x /= 0) . map (\m -> (sum . map fst $ m, snd . head $ m)) . groupBy ((==) `on` snd) . sortOn snd
 
 instance Num Poly where
   (+) = add
@@ -159,7 +159,7 @@ pmod p a b | deg a < deg b = pmod p b a
            | otherwise     = pmod_aux (P []) a
   where pmod_aux k r | deg r < deg b = (k,r)
                      | otherwise     = pmod_aux (k + t) (r - t)
-          where t = P [((fst . highest $ r) * ((inv p) . fst . highest $ b), deg r - deg b)]
+          where t = P [((fst . highest $ r) * (inv p . fst . highest $ b), deg r - deg b)]
 
 inv :: Integer -> Integer -> Integer
 inv p a = a^(p-2) `mod` p
@@ -170,7 +170,7 @@ deg      p = snd . highest $ p
 
 highest :: Poly -> (Integer, Integer)
 highest (P []) = undefined
-highest (P p)  = last . (sortOn snd) . normalize $ p
+highest (P p)  = last . sortOn snd . normalize $ p
 
 {-
 2.37

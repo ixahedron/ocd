@@ -11,7 +11,7 @@ Just [19,191,1297,117763]
 lenstra :: Integer -> ELPF -> Maybe Integer
 lenstra max p@(ELPF ElCurveF{..} q_) = lenstra_aux p 2
   where lenstra_aux q j | j >= max  = Nothing
-                        | otherwise = case (dadd q j) of
+                        | otherwise = case dadd q j of
                             Left z -> if z == p_ then Nothing else Just z
                             Right z -> lenstra_aux z (j+1)
 

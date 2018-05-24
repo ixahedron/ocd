@@ -28,7 +28,7 @@ encrypt_2_8b = encrypt 1373 2 (pub_2_8 947) 877 583
 inv p a = a^(p-2) `mod` p
 
 decrypt :: Integer -> Integer -> (Integer, Integer) -> Integer
-decrypt p priv (c1, c2) = (inv p $ c1^priv) * c2 `mod` p
+decrypt p priv (c1, c2) = inv p (c1^priv) * c2 `mod` p
 
 decrypt_2_8c = decrypt 1373 299 (661, 1325)
 

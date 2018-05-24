@@ -10,7 +10,7 @@ data PrvKey = PrvKey {p_ :: Integer, q_ :: Integer} deriving (Show)
 {-
 
 (a) Ciphertext c ≡ m^e ≡ 892383^103 ≡ 45293 (mod N = 2038667)
-*Main> cipher 892383 103 2038667                  
+*Main> cipher 892383 103 2038667
 45293
 good
 
@@ -78,7 +78,7 @@ euc a b = (g*x,g*y)
 
 {-
 
-*Main> factorByDifference npq39a                    
+*Main> factorByDifference npq39a
 (677,521)
 *Main> factorByDifference npq39b
 (10007,7703)
@@ -105,7 +105,7 @@ solveQuadrEq :: (Floating a) => a -> a -> a -> (a, a)
 solveQuadrEq a b c = (r1,r2)
   where d  = b^2 - 4*a*c -- I assume D will always be > 0
         r1 = (-b + sqrt d) / 2*a -- since we have to have 2 roots (factors)
-        r2 = (-b - sqrt d) / 2*a 
+        r2 = (-b - sqrt d) / 2*a
 
 -- 3.10
 
@@ -123,7 +123,7 @@ We note that the above shows
 
 Now, both e and d must be relatively prime to (p-1)(q-1),
 so they're odd. That means:
-	
+
   l := (d*e-1) = r*2^s, r odd, s>0.                     (ii)
 
 The rest is actually pretty much an application
@@ -197,7 +197,7 @@ mexp m a e = raise a e
         raise _ 0 = 1
         raise a 1 = a `mod` m
         raise a e = let t = if e `mod` 2 == 1 then a `mod` m else 1
-                    in t * (raise (a^2 `mod` m) (e `div` 2)) `mod` m
+                    in t * raise (a^2 `mod` m) (e `div` 2) `mod` m
 
 
 -- 3.11

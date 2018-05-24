@@ -37,4 +37,4 @@ True
 crt :: [Integer] -> [Integer] -> Integer
 crt ns as  = let prod = product ns
                  ls = [let (_,x2) = euc x $ prod `div` x in x2 | x <- ns ]
-             in (sum [ div (x*y*prod) z | (x,y,z) <- zip3 as ls ns ]) `mod` prod
+             in sum [ div (x*y*prod) z | (x,y,z) <- zip3 as ls ns ] `mod` prod

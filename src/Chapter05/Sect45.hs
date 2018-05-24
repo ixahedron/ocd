@@ -28,7 +28,7 @@ we get
 
 collisionPr :: Integer -> Integer -> Double
 collisionPr d n = let days = fromInteger d
-                  in 1 - product (map (\i -> 1 - (fromInteger i)/days) [1..n-1])
+                  in 1 - product (map (\i -> 1 - fromInteger i / days) [1..n-1])
 
 
 -- 5.37
@@ -144,7 +144,7 @@ dlpOnRhoMatch p g h PExp{..} = find (\l -> mexp p g l == h) lhs
         a = norm $ α-γ; b = norm $ δ-β; p' = p-1
         (s,_,d) = eGCD b p'; w = ((a * s) `mod` p') `div` d
         lhs = [w + k*(p' `div` d) | k<-[0..d-1]]
-  
+
 
 -- 5.41
 
@@ -177,7 +177,7 @@ dlpPollardRho p g h = let (y,γ,δ) = fRho (g,1,0)
         rhoxps x y PExp{..} = let (x',α',β') = fRho (x,α,β);
                                   (y',γ',δ') = fRho . fRho $ (y,γ,δ)
                               in rhoxps x' y' $ PExp α' β' γ' δ'
-        
+
         fRho :: (Integer, Integer, Integer) -> (Integer, Integer, Integer)
         fRho (x,α,β) | p'/3 > x' && x' >= 0 = ((g*x) `mod` p, (α+1) `mod` (p-1), β)
                      | 2*p'/3 > x' && x' >= p'/3 =
@@ -210,7 +210,7 @@ people have the same birthday instead of if two people have their
 birtday on the same specific date increases the probability of an
 affirmative answer. By those theorems, indeed k = O(√N).
 
-(b) 
+(b)
 λ> mapM_ (putStrLn . show) $ map factorPollardRho543b [2201, 9409613, 1782886219]
 Just (31,3,6.394568344792313e-2)
 Just (541,33,1.0757913769276532e-2)
@@ -243,7 +243,7 @@ you pick one of the factors for the initial value, lol), but they must be rare.
 -}
 
 factorPollardUsing :: (Integer -> Integer) -> Integer -> Maybe (Integer, Integer, Double)
-factorPollardUsing f n = rho_aux (f 0) (f . f $ 0) 1                            
+factorPollardUsing f n = rho_aux (f 0) (f . f $ 0) 1
   where rho_aux x y k | x  == y   = Nothing
                       | gk == n   = Nothing
                       | gk > 1    = Just (gk, k, k' / sqrt n')

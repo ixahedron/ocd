@@ -171,6 +171,6 @@ gram (v:vs) = gram_aux [v] vs
         gram_aux ovs (vi:vis) = let vi' = zipWith (-) vi vjsum
                                     vjsum = foldr1 (zipWith (+)) (map δ ovs)
                                     δ vj = map (* μ vj) vj
-                                    μ vj = (dot vi vj) / (dot vj vj)
+                                    μ vj = dot vi vj / dot vj vj
                                 in gram_aux (ovs ++ [vi']) vis
 

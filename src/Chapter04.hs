@@ -19,7 +19,7 @@ PrvSKey {d_ = 561517}
 
 data PrvEKey = PrvEKey {p_ :: Integer, q_ :: Integer} deriving Show
 data PubSKey = PubSKey {n_ :: Integer, e_ :: Integer} deriving Show
-data PrvSKey = PrvSKey {d_ :: Integer} deriving Show
+newtype PrvSKey = PrvSKey {d_ :: Integer} deriving Show
 
 computePrvSKey :: PubSKey -> PrvEKey -> PrvSKey
 computePrvSKey pubk (PrvEKey p q) = let e = e_ pubk in PrvSKey $ inv e $ (p-1)*(q-1)
@@ -29,7 +29,7 @@ signRSA :: PubSKey -> PrvSKey -> Integer -> Integer
 signRSA pubk (PrvSKey d) doc = let n = n_ pubk in mexp n doc d
 
 verifyRSA :: PubSKey -> Integer -> Integer -> Bool
-verifyRSA (PubSKey n e) s doc = (mexp n s e) == doc
+verifyRSA (PubSKey n e) s doc = mexp n s e == doc
 
 -- 4.2
 
@@ -89,11 +89,11 @@ computeEGVerKey (EGSgnK ss@(EGS p g) a) = EGVerK ss $ mexp p g a
 
 signEG :: EGSgnK -> Integer -> Integer -> EGSignature
 signEG (EGSgnK (EGS p g) a) d k = let s1 = mexp p g k
-                                  in (s1, ((d-a*s1)*(inv k $ p-1)) `mod` (p-1))
+                                  in (s1, ((d-a*s1) * inv k (p-1)) `mod` (p-1))
 
 verifyEG :: EGVerK -> Integer -> EGSignature -> Bool
 verifyEG (EGVerK (EGS p g) a) d (s1,s2) =
-    (pexp a s1) * (pexp s1 s2) ≡ pexp g d $ p
+    pexp a s1 * pexp s1 s2 ≡ pexp g d $ p
   where pexp = mexp p
 
 -- 4.6
@@ -178,7 +178,7 @@ recovera (EGVerK ss@(EGS p g) dA) (d,(s1,s2)) (d',(s1',s2'))
 
 {-
 
-(a) 
+(a)
 λ> let vk = computeDSAVerKey sk
 λ> dA_ vk
 4940

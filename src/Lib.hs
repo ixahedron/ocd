@@ -30,7 +30,7 @@ import Lib.Field
 crt :: [Integer] -> [Integer] -> Integer
 crt ns as = let prod = product ns
                 ls = [let (_,x2) = euc x $ prod `div` x in x2 | x <- ns ]
-            in (sum [ div (x*y*prod) z | (x,y,z) <- zip3 as ls ns ]) `mod` prod
+            in sum [ div (x*y*prod) z | (x,y,z) <- zip3 as ls ns ] `mod` prod
 
 -- natural logarithm
 lnR :: Floating a => a -> a
@@ -95,15 +95,15 @@ millerRabinTest (fromIntegral -> s) n
 
         mrt_aux _    [] = Right as
         mrt_aux 0 (a:xs) | (a `mod` n) `elem` [1,-1,n-1] = mrt_aux 0 xs
-                         | otherwise = mrt_aux 1 ((mexp n a 2):xs)
+                         | otherwise = mrt_aux 1 (mexp n a 2 : xs)
         mrt_aux j (a:xs) | j == k = Left $ as !! (s - length (a:xs))
                          | (a `mod` n) `elem` [-1,n-1] = mrt_aux 0 xs
-                         | otherwise = mrt_aux (j+1) ((mexp n a 2):xs)
+                         | otherwise = mrt_aux (j+1) (mexp n a 2 : xs)
 
 -- reduces a number to the product of all its odd divisors
 -- reduceToOdd n = (k,p) => n = 2^k * p
 reduceToOdd :: Integral n => n -> (n,n)
-reduceToOdd m = reduce 0 m
+reduceToOdd = reduce 0
   where reduce k n | odd n = (k,n)
                    | otherwise = reduce (k+1) $ n `div` 2
 
@@ -120,7 +120,7 @@ primePowers = mergeAll [[p^i | i <- [(1 :: Integer)..]] | p <- primes]
 -- compute coefficients for the binary expansion of an integer
 binExpansion :: Integral n => n -> [n]
 binExpansion 0 = [0]
-binExpansion n = (n `mod` 2) : (binExpansion $ n `div` 2)
+binExpansion n = (n `mod` 2) : binExpansion (n `div` 2)
 
 -- checks (using primeFactors, might be slow?) whether
 -- a given number is Carmichael

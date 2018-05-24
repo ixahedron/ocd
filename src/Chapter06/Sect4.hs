@@ -24,12 +24,12 @@ bforceSecretN :: ELPF -> ELPF -> Maybe Integer
 bforceSecretN qP@(ELPF ElCurveF{..} _) qA = find (\n -> n *^ qP == qA) [2..p_]
 
 ecdhSendX :: ElCurveF -> Integer -> Integer -> Integer
-ecdhSendX c@ElCurveF{..} xA nB = fst . q_ $ nB *^ (ELPF c (xA, yA))
+ecdhSendX c@ElCurveF{..} xA nB = fst . q_ $ nB *^ ELPF c (xA, yA)
   where yA = sqrtFin p_ $ (mexp p_ xA 3 + a_ * xA + b_) `mod` p_
 
 sqrtFin :: Integer -> Integer -> Integer
 sqrtFin p a | p ≡ 3 $ 4 = mexp p a' ((p+1) `div` 4)
-            | otherwise = head $ [b | b<-[1..p-1], mexp p b 2 == a'] -- yeah yeah, unsafe, inefficient
+            | otherwise = head [b | b<-[1..p-1], mexp p b 2 == a'] -- yeah yeah, unsafe, inefficient
   where a' = a `mod` p
 
 ec614 = ElCurveF 171 853 2671
@@ -138,9 +138,9 @@ gets both ciphertexts.
 
 breakMVElgamal :: (ELPF,Integer,Integer) -> Integer -> Integer
 breakMVElgamal (r,c1,c2) m1 = m2
-  where m2 = flip inv p_ (sqrtFin p_ $ (mexp p_ z 3 + a_*z + b_ ) * inv (mexp p_ c2 2) p_)
+  where m2 = inv (sqrtFin p_ $ (mexp p_ z 3 + a_*z + b_ ) * inv (mexp p_ c2 2) p_) p_
         ELPF{..} = r; ElCurveF{..} = curve_
-        z = c1 * (inv m1 p_) -- c1/m1
+        z = c1 * inv m1 p_ -- c1/m1
 
 r618b = ELPF ec617 (269,339)
 
@@ -205,8 +205,8 @@ signECDSA g q s d e = let s1 = (fst . q_ $ e *^ g) `mod` q;
                       in (s1,s2)
 
 verifyECDSA :: ELPF -> Integer -> ELPF -> Integer -> (Integer, Integer) -> Bool
-verifyECDSA g q v d (s1,s2) = let v1 =  (d*(inv s2 q)) `mod` q;
-                                  v2 = (s1*(inv s2 q)) `mod` q
+verifyECDSA g q v d (s1,s2) = let v1 =  (d * inv s2 q) `mod` q;
+                                  v2 = (s1 * inv s2 q) `mod` q
                               in (fst . q_ $ (v1 *^ g) +^ (v2 *^ v)) ≡ s1 $ q
 
 ec620 = ElCurveF 231 473 17389

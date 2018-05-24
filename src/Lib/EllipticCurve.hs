@@ -30,7 +30,7 @@ data ELP a = O | ELPF {curve_ :: ElCurveF, q_ :: (a,a)}
 
 normalize :: Fieldish a => ELP a -> ELP a
 normalize O = O
-normalize (ELPF ec (x,y)) = let p = p_ $ ec in ELPF ec (x `pmod` p, y `pmod` p)
+normalize (ELPF ec (x,y)) = let p = p_ ec in ELPF ec (x `pmod` p, y `pmod` p)
 
 class AdditiveGroup p where
   -- identity
@@ -74,7 +74,7 @@ lambdaSlope O _ = Nothing
 lambdaSlope _ O = Nothing
 lambdaSlope p1@(ELPF _ (x1,y1)) p2@(ELPF ElCurveF{..} (x2,y2))
   | p1 == negateP p2 = Nothing
-  | otherwise = Just $ if (x1,y1) == (x2,y2) then ((3*x1*x1+(fromInteger a_)) * pinv (2*y1) p_ ) `pmod` p_
+  | otherwise = Just $ if (x1,y1) == (x2,y2) then ((3*x1*x1 + fromInteger a_) * pinv (2*y1) p_ ) `pmod` p_
                                       else ((y2-y1) * pinv (x2-x1) p_) `pmod` p_
 
 -- Double-and-add algo for elliptic curves
@@ -92,7 +92,7 @@ onCurve (ELPF ElCurveF{..} (x,y)) = y*y ≡ (x*x*x + a'*x + b') $ p_
 
 millerWeil :: (Fieldish a, Integral n) => ELP a -> ELP a -> ELP a -> n -> a
 millerWeil p q s m = (((f_P (q+^s) * pinv (f_P s) p') `pmod` p') *
-                                (pinv ((f_Q (p -^ s)) * pinv (f_Q (negateP s)) p') p')) `pmod` p'
+                        pinv (f_Q (p -^ s) * pinv (f_Q (negateP s)) p') p') `pmod` p'
   where f_P = millerAlgo m p
         f_Q = millerAlgo m q
         p' = p_ . curve_ $ p
@@ -109,8 +109,8 @@ millerG p q s = case lambdaSlope p q of
 millerAlgo :: (Fieldish a, Integral n) => n -> ELP a -> (ELP a -> a)
 millerAlgo m p = miller_aux p 1 mbin
   where miller_aux _ f      [] = let p' = p_ . curve_ $ p in (`pmod` p') . f
-        miller_aux t f (0:bin) = miller_aux (t+^t)     (f*f*(millerG t t)) bin
-        miller_aux t f (1:bin) = miller_aux (t+^t+^p) ((f*f*(millerG t t))*millerG (t+^t) p) bin
+        miller_aux t f (0:bin) = miller_aux (t+^t)     (f*f*millerG t t) bin
+        miller_aux t f (1:bin) = miller_aux (t+^t+^p) ((f*f*millerG t t)*millerG (t+^t) p) bin
         miller_aux _ _ (_: _ ) = error "binary expansion isn't binary"
 
         _:_:mbin = reverse . binExpansion $ m
@@ -131,18 +131,18 @@ curveSize :: Integral n => ElCurveF -> n
 curveSize = fromIntegral . length . listPoints
 
 listPoints :: ElCurveF -> [ELPF]
-listPoints e = O:(map (ELPF e) $ listPointsReadable e)
+listPoints e = O : map (ELPF e) (listPointsReadable e)
 
 listPointsFp2 :: ElCurveF -> [ELPP]
-listPointsFp2 e = O:(map (ELPF e) $ listPointsReadableFp2 e)
+listPointsFp2 e = O : map (ELPF e) (listPointsReadableFp2 e)
 
 listPointsReadable :: ElCurveF -> [(Integer, Integer)]
-listPointsReadable ElCurveF{..} = concat . map points $ [0..p_-1]
+listPointsReadable ElCurveF{..} = concatMap points [0..p_-1]
   where points x | jacobi (y2 x) p_ == -1 = []
                  | otherwise = [(x,y) | y<-sqrtFins p_ (y2 x)]
 
         y2 x = x*x*x + a_*x + b_
 
 listPointsReadableFp2 :: ElCurveF -> [(Fp2Elem, Fp2Elem)]
-listPointsReadableFp2 e@ElCurveF{..} = concat . map points $ [(i,j) | i<-[0..p_-1], j<-[0..p_-1]]
+listPointsReadableFp2 e@ElCurveF{..} = concatMap points [(i,j) | i<-[0..p_-1], j<-[0..p_-1]]
   where points x = [(x,y) | y<-[(i,j) | i<-[0..p_-1], j<-[0..p_-1]], onCurve $ ELPF e (x,y)]

@@ -1,6 +1,7 @@
 import Lib.EllipticCurve hiding (dadd)
 import Lib (eGCD)
 import Data.List (find, group)
+import Data.Maybe (listToMaybe)
 
 -- 6.8
 
@@ -12,8 +13,8 @@ import Data.List (find, group)
 -}
 
 --ecdlp p q = n <=> q = np
-ecdlpTrialError :: ELPF -> ELPF -> Integer
-ecdlpTrialError p q = head $ [n | n<-[1..], q == n *^ p]
+ecdlpTrialError :: ELPF -> ELPF -> Maybe Integer
+ecdlpTrialError p q = listToMaybe [n | n<-[1..], q == n *^ p]
 
 -- 6.9
 
@@ -100,21 +101,21 @@ bin: 21; tern: 11
 
 binExpansion :: Integer -> [Integer]
 binExpansion 0 = [0]
-binExpansion n = (n `mod` 2) : (binExpansion $ n `div` 2)
+binExpansion n = (n `mod` 2) : binExpansion (n `div` 2)
 
 ternExpansion :: Integer -> [Integer]
 ternExpansion = concat . replaceRun . shift . group . binExpansion
   where replaceRun [] = []
         replaceRun ([]:xs) = replaceRun xs
-        replaceRun (zs@(0:_):xs) = zs:(replaceRun xs)
-        replaceRun ([1,0]:xs) = [1,0]:(replaceRun xs)
-        replaceRun (run@(1:_):xs) = let rp = (-1):(replicate ((length run)-2) 0)++[1] in rp:(replaceRun xs)
+        replaceRun (zs@(0:_):xs) = zs : replaceRun xs
+        replaceRun ([1,0]:xs) = [1,0] : replaceRun xs
+        replaceRun (run@(1:_):xs) = let rp = (-1) : replicate (length run - 2) 0 ++ [1] in rp : replaceRun xs
 
         shift [] = []
-        shift zs@((0:_):[]) = zs
+        shift zs@[0:_] = zs
         shift (zs@(0:_):xs) = zs:shift xs
-        shift (ones@(1:_):[0]:[]) = (ones++[0]):[]
-        shift (ones@(1:_):(0:zs):xs) = (ones++[0]):zs:(shift xs)
+        shift [ones@(1:_), [0]] = [ones ++ [0]]
+        shift (ones@(1:_):(0:zs):xs) = (ones++[0]) : zs : shift xs
 
 -- multiply out the ternary expansion into hopefully the original integer
 testTern :: [Integer] -> Integer

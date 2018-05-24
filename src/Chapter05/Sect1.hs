@@ -16,7 +16,7 @@ import Data.List (permutations, nub, sort)
 (a) q^n
 (b) product of q_i over i=1..n
 (c) q^n²
-(d) 
+(d)
 (e) λ> 12*4*2*100*32
 307200
 (Bonus: no.)
@@ -115,22 +115,22 @@ x^5 - 10*x^4 + 40*x^3 - 80*x^2 + 80*x - 32
 --1 ('y',2) = y²
 -- yes, an extremely shady representation but seriously,
 -- I most likely have to deal with just this one task
-data Monom = M Integer [(Char, Integer)] 
+data Monom = M Integer [(Char, Integer)]
 
 instance Show Monom where
   show (M a []) = show a
   show (M a ((_,0):xs)) = show $ M a xs
   show (M 0 _ ) = "0"
   show (M n ((x,e):xs)) = let p = if e == 1 then "" else "^" ++ show e;
-                              sxs = if length xs == 0 then p else p ++ "*" ++ show (M 1 xs)
-                              a rest = if n == 1 then rest else (show n) ++ "*" ++ rest
+                              sxs = if null xs then p else p ++ "*" ++ show (M 1 xs)
+                              a rest = if n == 1 then rest else show n ++ "*" ++ rest
                           in a $ x : sxs
 
   showList xs = (++) $ intercalateSgn (map show xs)
     where intercalateSgn [] = []
           intercalateSgn [x] = x
-          intercalateSgn (x:(('-':y):xs)) = x ++ " - " ++ (intercalateSgn (y:xs))
-          intercalateSgn (x:xs) = x ++ " + " ++ (intercalateSgn xs)
+          intercalateSgn (x:(('-':y):xs)) = x ++ " - " ++ intercalateSgn (y:xs)
+          intercalateSgn (x:xs) = x ++ " + " ++ intercalateSgn xs
 
 binomialth :: Monom -> Monom -> Integer -> [Monom]
 binomialth (M a []) t2 n = binomialth (M a [('x',0)]) t2 n
@@ -139,11 +139,11 @@ binomialth (M a [(x,e1)]) (M b [(y,e2)]) n | (e1,e2) == (0,0) = [M ((a+b)^n) []]
                                            | x == y && e1 == e2 = [M ((a+b)^n) [(x,e1*n)]]
                                            | otherwise = bth_aux [0..n]
   where bth_aux [] = []
-        bth_aux (j:[]) = [M (a^n) [(x,e1*n)]]
-        bth_aux (0:js) = (M (b^n) $ [(y,e2*n)]) : bth_aux js
+        bth_aux    [j] = [M (a^n) [(x,e1*n)]]
+        bth_aux (0:js) =  M (b^n) [(y,e2*n)] : bth_aux js
         bth_aux (j:js)
-          | x == y = (M p $ [(x,e1*j+e2*(n-j))]) : bth_aux js
-          | otherwise = (M p . filter (\g -> snd g /= 0) $ (x,e1*j):(y,e2*(n-j)):[]) : bth_aux js
+          | x == y = M p [(x,e1*j+e2*(n-j))] : bth_aux js
+          | otherwise = (M p . filter (\g -> snd g /= 0) $ [(x, e1*j), (y, e2*(n-j))]) : bth_aux js
             where q = binom n j; p = q*(a^j)*(b^(n-j));
 binomialth _ _ _ = error "I only need binomial theorem on one-term monomials ¯\\_(ツ)_/¯"
 
@@ -165,7 +165,7 @@ binomialth _ _ _ = error "I only need binomial theorem on one-term monomials ¯\
     Σ_j=0..n-1 (n-1 j) x^j y^(n-j)
   = x^n + Σ_j=1..n-1 (n-1 j-1) x^j y^(n-j) +
     y^n + Σ_j=1..n-1 (n-1 j) x^j y^(n-j)
-  
+
   So it mostly works
 
 (c) It can indeed be decomposed, okay?
@@ -239,4 +239,4 @@ so all in all:
 derangements :: Integer -> Integer
 derangements 0 = 1
 derangements 1 = 0
-derangements n = (n-1) * ((derangements $ n-1) + (derangements $ n-2))
+derangements n = (n-1) * (derangements (n-1) + derangements (n-2))

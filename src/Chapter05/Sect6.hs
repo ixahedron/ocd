@@ -50,11 +50,11 @@ fC :: Cipher -> Double
 fC c = sum . map (\m -> fM m * fCIM c m) $ [1..3]
 
 (///) :: Integral n => n -> n -> Double
-a /// b = (fromIntegral a) / (fromIntegral b)
+a /// b = fromIntegral a / fromIntegral b
 
 -- naming is a v3ry smar7 h4ck for C|M as you can see
 fCIM :: Cipher -> Message -> Double
-fCIM c m = let condCs = map (\mk -> M.findWithDefault 0 mk kmc545) . map (m,) $ [1..3]
+fCIM c m = let condCs = map ((\mk -> M.findWithDefault 0 mk kmc545) . (m,)) [1..3]
            in (length . filter (== c) $ condCs) /// length condCs
 
 fKIC :: Key -> Cipher -> Double
@@ -185,7 +185,7 @@ Which by definition means our cryptosystem is indeed perfectly secure.
 Successive choices by definition means X_n^r = X_n followed by X_n^{r-1}.
 We can use this to expand H(X_n^r) as follows (w/ X as X_n to avoid clutter):
 
-  H(X^r) = H(X) + ∑_i=1..n P(X) H(X^{r-1}) = H(X) + 1/n * n * H(X^{r-1}) = 
+  H(X^r) = H(X) + ∑_i=1..n P(X) H(X^{r-1}) = H(X) + 1/n * n * H(X^{r-1}) =
   H(X) + H(X^{r-1})
 
 We repeat this expansion step further r-1 times, getting in the end
@@ -206,13 +206,13 @@ QED
   ∑_i=1..n p_i * ∑_i=1..n log(p_i) + ∑_i=1..n p_i * ∑_j=1..m_i q_ij log(q_ij) =
 
   1 * ∑_i=1..n log(p_i) + 1 * ∑_j=1..m_i q_ij * ∑_j=1..m_i log(q_ij) =
-  
+
   ∑_i=1..n log(p_i) + 1 * ∑_j=1..m_i * log(q_ij) =
-  
-  ∑_i=1..n ∑_j=1..m_i (log(p_i) + log(q_ij)) = 
-  
+
+  ∑_i=1..n ∑_j=1..m_i (log(p_i) + log(q_ij)) =
+
   ∑_i=1..n ∑_j=1..m_i log(p_i * q_ij) = (the same logic as before, see the hint)
-  
+
   ∑_i=1..n ∑_j=1..m_i p_i q_ij log(p_i * q_ij)
 
 -}
@@ -259,7 +259,7 @@ By definition of equivocation:
    =          1         * H(X)
    = H(X)
 
-(b) Yes, don't have the proof 
+(b) Yes, don't have the proof
 
 -}
 
@@ -327,7 +327,7 @@ h f xs = -(sum . map (\x -> f x * logBase 2 (f x)) $ xs)
 -- 5.59
 
 {-
-                               ∑≠0            ∑≠0    =>        ∑=0        
+                               ∑≠0            ∑≠0    =>        ∑=0
   H(K|C) = -∑_i=1..n ∑_j=1..m fC(c_j) * fK|C(k_i|c_j) * log(fK|C(k_i|c_j)) := 0
 
   => log(fK|C(k_i|c_j)) = 0 for all relevant i,j => fK|C(k_i|c_j) = 1

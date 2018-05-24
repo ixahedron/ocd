@@ -35,14 +35,14 @@ class (Ord p, Num p, Moddable p) => Fieldish p where
   pinv :: Integral n => p -> n -> p
   toP2 :: p -> Fp2Elem
   zero :: p
-  zero = fromInteger 0
+  zero = 0
 
 instance Fieldish Integer where
   pinv (fromInteger -> a) (fromIntegral -> p) = inv a p
-  toP2 = (fromInteger :: Integer -> Fp2Elem)
+  toP2 = fromInteger :: Integer -> Fp2Elem
 
 instance Fieldish Fp2Elem where
-  pinv (x,i) (fromIntegral -> p) = ((x,-i)*(fromInteger $ inv (x*x+i*i) p)) `pmod` p
+  pinv (x,i) (fromIntegral -> p) = ((x,-i) * fromInteger (inv (x*x+i*i) p)) `pmod` p
   toP2 = id
 
 infix 5 ≡
@@ -52,7 +52,7 @@ a ≡ b = \p -> (a `pmod` p) == (b `pmod` p)
 -- multiplicative inverse using EEA
 inv :: (Integral n, Show n) => n -> n -> n
 inv a p = if gcd a p == 1
-          then (fst $ euc a p) `mod` p
+          then fst (euc a p) `mod` p
           else error $ show p ++ " can't compute inverse if gcd =/= 1 " ++ show a
 
 -- modular (fast) exponentiation using binary method
@@ -60,12 +60,12 @@ inv a p = if gcd a p == 1
 mexp :: (Integral n, Fieldish a) => n -> a -> n -> a
 mexp 1 _ _ = 0
 mexp m x y = raise x y
-  where raise _    0 = fromInteger 1
+  where raise _    0 = 1
         raise a    1 = a `pmod` m
         raise a e | a == zero = zero
                   | e < 0  = raise (pinv a m) (-e)
-                  | otherwise = let t = if odd e then a `pmod` m else fromInteger 1
-                    in (t * (raise ((a*a) `pmod` m) (e `div` 2))) `pmod` m
+                  | otherwise = let t = if odd e then a `pmod` m else 1
+                    in (t * raise ((a*a) `pmod` m) (e `div` 2)) `pmod` m
 
 -- euc a b = (x,y) => ax + by = gcd a b
 euc :: Integral n => n -> n -> (n,n)
@@ -95,7 +95,7 @@ jacobi   a  b | a `mod` b == 0 = 0
                              q = if even k then 1 else jacobi 2 b
                          in q * jacobi p b
               | odd b = case (a `mod` 4, b `mod` 4) of
-                          (3,3) -> jacobi (-1) a * (jacobi (b `mod` a) a)
+                          (3,3) -> jacobi (-1) a * jacobi (b `mod` a) a
                           _ -> jacobi (b `mod` a) a
               | otherwise = error "even b"
   where reduce :: Integral n => n -> n -> (n,n)
