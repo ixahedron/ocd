@@ -1,7 +1,6 @@
 module Lib.EllipticCurveGeneralised (
                                       ECGen(..)
                                     , ELG(..)
-                                    , AdditiveGroup(..)
                                     , onCurve
                                     , ecDiscriminant
                                     , curveSize
@@ -9,7 +8,7 @@ module Lib.EllipticCurveGeneralised (
                                     , findGenerator
                                     ) where
 
-import Lib.EllipticCurve (AdditiveGroup(..))
+import Lib.AddGroup
 import Lib.Polynomial
 
 -- extremely simplified for now
@@ -24,7 +23,7 @@ instance Show ELG where
   show OG = "OG"
   show ELG{..} = "ELG " ++ show q
 
-instance AdditiveGroup ELG where
+instance AddGroup ELG where
   zero = OG
   negateP OG = OG
   negateP (ELG ECGen{..} (x,y)) = ELG ECGen{..} (x,-y-a1*x-a3)

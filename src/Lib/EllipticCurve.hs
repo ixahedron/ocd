@@ -2,7 +2,6 @@ module Lib.EllipticCurve (ElCurveF(..)
                         , ELP(..)
                         , ELPF
                         , ELPP
-                        , AdditiveGroup(..)
                         , lambdaSlope
                         , onCurve
                         , millerWeil
@@ -16,6 +15,7 @@ module Lib.EllipticCurve (ElCurveF(..)
                         , listPointsReadableFp2
                         ) where
 
+import Lib.AddGroup
 import Lib.Field
 import Lib (binExpansion, sqrtFins)
 import Control.Applicative (liftA2)
@@ -32,23 +32,7 @@ normalize :: Fieldish a => ELP a -> ELP a
 normalize O = O
 normalize (ELPF ec (x,y)) = let p = p_ ec in ELPF ec (x `pmod` p, y `pmod` p)
 
-class AdditiveGroup p where
-  -- identity
-  zero :: p
-  (+^) :: p -> p -> p
-  (^+) :: p -> p -> p
-  (^+) = (+^)
-  -- inverse
-  negateP :: p -> p
-  -- subtraction
-  (-^) :: p -> p -> p
-  p -^ p' = p +^ negateP p'
-  -- scalar multiplication
-  (*^) :: (Integral a) => a -> p -> p
-  (^*) :: (Integral a) => p -> a -> p
-  p ^* k = k *^ p
-
-instance Fieldish a => AdditiveGroup (ELP a) where
+instance Fieldish a => AddGroup (ELP a) where
   zero = O
   negateP O = O
   negateP (ELPF ec (x,y)) = normalize $ ELPF ec (x,-y)

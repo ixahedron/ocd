@@ -1,3 +1,4 @@
+import Lib.AddGroup
 import Lib ((≡), jacobi, inv)
 
 -- 6.1
@@ -23,22 +24,7 @@ data ElCurveR = ElCurveR {a :: Integer, b :: Integer}
 data ELPR = OOO | ELPR {curve :: ElCurveR, q :: (Double, Double)} -- moya oborona
   deriving (Show, Eq)
 
-class AdditiveGroup p where
-  -- identity
-  zero :: p
-  (+^) :: p -> p -> p
-  -- inverse
-  negateP :: p -> p
-  -- subtraction
-  (-^) :: p -> p -> p
-  p -^ p' = p +^ negateP p'
-  -- scalar multiplication
-  (*^) :: (Integral a) => a -> p -> p
-  (^*) :: (Integral a) => p -> a -> p
-  p ^* k = k *^ p
-
-
-instance AdditiveGroup ELPR where
+instance AddGroup ELPR where
   zero = OOO
   negateP OOO = OOO
   negateP (ELPR c (x,y)) = ELPR c (x,-y)
@@ -182,7 +168,7 @@ I don't fancy doing that, but I wrote code for addition, so maybe that's enough?
 
 -}
 
-instance AdditiveGroup ELPF where
+instance AddGroup ELPF where
   zero = O
   negateP O = O
   negateP (ELPF c@ElCurveF{..} (x,y)) = ELPF c (x,p-y)

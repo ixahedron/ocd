@@ -111,7 +111,7 @@ findSequence ms (a,b) = let t = inv a b in map ((`mod` b) . (*t)) ms
 {-
 
 (a)
-If B and B' are the givem basises in matrix form, then to make a change from B' to B,
+If B and B' are the given basises in matrix form, then to make a change from B' to B,
 we need C := BD with D := {B'}^-1, so that we can multiply and get CB' = BDB' = B{B'}^-1 B' = B
 
 And, I mean, I should probably write code for matrix multiplication and inversion, but I
