@@ -163,6 +163,8 @@ get actual det(L). Of course, by squaring we get rid of this particular problem.
 [3,-3,2]
 [-3,21,3]
 [2,3,7]
+λ> sqrt . mdet $ gram basis714
+15.198684
 
 (d) Trivial by Proposition 7.19 and the relation ||v||^2 = (v `dot` v)
 -}
