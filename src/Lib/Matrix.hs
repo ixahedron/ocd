@@ -170,9 +170,8 @@ pivot m s i j = addTo m j $ vscal s (mi m i)
                                         in Matrix $ take (i-1) m' ++ (v `vplus` mi m i) : drop i m'
 
 findPivot :: (Num a, Eq a, Integral n) => Matrix a -> n -> n -> Maybe (a,n)
-findPivot m (fromIntegral -> i) (fromIntegral -> j) = safeHead . filter ((/= 0) . fst) . drop i $ zip (head . drop (j-1) . dematrix . mtranspose $ m) [1..]
-  where
-  safeHead []     = Nothing
-  safeHead (x:xs) = Just x
-
-
+findPivot m (fromIntegral -> i) (fromIntegral -> j) =
+  safeHead . filter ((/= 0) . fst) . drop i $
+    zip (head . drop (j-1) . dematrix . mtranspose $ m) [1..]
+  where safeHead []     = Nothing
+        safeHead (x:xs) = Just x
