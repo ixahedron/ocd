@@ -1,8 +1,9 @@
 module Lib.Polynomial where
 
 import Data.List (sortOn, groupBy)
+import Data.Ord (Down(..))
 import Data.Function (on)
-import Lib (inv)
+import Lib.Field (inv)
 
 newtype Poly = P [(Integer, Integer)]
 data PolyF = PolyF {p :: Integer, quot :: Poly, poly :: Poly}
@@ -41,7 +42,7 @@ sgn a | a >= 0    = "+"
       | otherwise = []
 
 pprint :: Poly -> IO ()
-pprint (P p) = print . P . reverse . sortOn snd $ p
+pprint (P p) = print . P . sortOn (Down . snd) $ p
 
 add :: Poly -> Poly -> Poly
 add p (P []) = p
@@ -56,6 +57,13 @@ mult (P p1) (P p2) = P . normalize $ ((\(a,x) (b,y) -> (a*b, x+y)) <$> p1 <*> p2
 normalize :: [(Integer, Integer)] -> [(Integer, Integer)]
 normalize = filter (\x -> fst x /= 0) . map (\m -> (sum . map fst $ m, snd . head $ m)) .
             groupBy ((==) `on` snd) . sortOn (\x -> - snd x)
+
+contentFactoring :: Poly -> (Integer,Poly)
+contentFactoring (P as) = let content = foldr1 gcd . map fst $ as
+                     in (content, P $ map (\(a,e) -> (a `div` content,e)) as)
+
+primitivize :: Poly -> Poly
+primitivize = snd . contentFactoring
 
 -- in case of a finite field, take all coefficients mod p
 reduceCoefs :: Integer -> [(Integer,Integer)] -> [(Integer,Integer)]
@@ -91,9 +99,11 @@ instance Num Poly where
   fromInteger a = P [(a,0)]
 
 pdiv :: Poly -> Poly -> (Poly, Poly)
+pdiv _ (P []) = error "polynomial division by zero"
 pdiv a b | deg a < deg b = (P [], a)
          | otherwise     = pdiv_aux (P []) a
   where pdiv_aux k r | deg r < deg b = (k,r)
+                     | normalize `over` r == P [] = (k,r)
                      | otherwise     = pdiv_aux (k + t) (r - t*b)
           where t = P [(h, deg r - deg b)]
                 h = (fst . highest $ r) `div` (fst . highest $ b)
