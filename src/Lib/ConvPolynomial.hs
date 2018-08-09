@@ -19,6 +19,11 @@ pcfEmpty n pk = PCF n pk $ P []
 liftNaive :: PolyCF -> PolyC
 liftNaive PCF{..} = PC n poly
 
+liftCenter :: PolyCF -> PolyC
+liftCenter PCF{..} = PC n $ (f . reduceCoefs q) `over` poly
+  where f = map (\(i,e) -> (if i <= q `div` 2 then i else i-q,e))
+        q = let (p,k) = pk in p^k
+
 sink :: (Integer,Integer) -> PolyC -> PolyCF
 sink pk PC{..} = asToFieldF $ PCF n pk poly
 

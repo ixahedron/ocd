@@ -54,6 +54,9 @@ mult (P []) _ = P []
 mult _ (P []) = P []
 mult (P p1) (P p2) = P . normalize $ ((\(a,x) (b,y) -> (a*b, x+y)) <$> p1 <*> p2)
 
+pscal :: Integer -> Poly -> Poly
+pscal c p = map (\(a,x) -> (a*c,x)) `over` p
+
 normalize :: [(Integer, Integer)] -> [(Integer, Integer)]
 normalize = filter (\x -> fst x /= 0) . map (\m -> (sum . map fst $ m, snd . head $ m)) .
             groupBy ((==) `on` snd) . sortOn (\x -> - snd x)
